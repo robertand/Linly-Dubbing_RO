@@ -18,7 +18,7 @@ from pyannote.audio import Model, Inference
 from scipy.spatial.distance import cosine
 
 load_dotenv()
-# 填写平台申请的appid, access_token以及cluster
+# Fill in the appid, access_token, and cluster applied for from the platform
 appid = os.getenv('BYTEDANCE_APPID')
 access_token = os.getenv('BYTEDANCE_ACCESS_TOKEN')
 
@@ -99,7 +99,7 @@ def generate_speaker_to_voice_type(folder):
 
 def tts(text, output_path, speaker_wav, voice_type=None):
     if os.path.exists(output_path):
-        logger.info(f'火山TTS {text} 已存在')
+        logger.info(f'Volcengine TTS {text} already exists')
         return
     folder = os.path.dirname(os.path.dirname(output_path))
     if voice_type is None:
@@ -123,7 +123,7 @@ def tts(text, output_path, speaker_wav, voice_type=None):
                 
                 # ensure the file is saved
                 wav, sample_rate = librosa.load(output_path, sr=24000)
-                logger.info(f'火山TTS {text} 保存成功: {output_path}')
+                logger.info(f'Volcengine TTS {text} saved successfully: {output_path}')
                 time.sleep(0.1)
                 break
         except Exception as e:
@@ -140,7 +140,7 @@ def get_available_speakers():
         retry = 3
         while retry > 0:
             try:
-                tts('YouDub 是一个创新的开源工具，专注于将 YouTube 等平台的优质视频翻译和配音为中文版本。此工具融合了先进的 AI 技术，包括语音识别、大型语言模型翻译以及 AI 声音克隆技术，为中文用户提供具有原始 YouTuber 音色的中文配音视频。', output_path, None, voice_type=voice_type)
+                tts('YouDub is an innovative open-source tool focused on translating and dubbing high-quality videos from platforms like YouTube into Chinese. This tool integrates advanced AI technologies, including speech recognition, large language model translation, and AI voice cloning technology, to provide Chinese users with Chinese-dubbed videos that have the original YouTuber\'s tone.', output_path, None, voice_type=voice_type)
                 embedding = embedding_inference(output_path)
                 np.save(output_path.replace('.wav', '.npy'), embedding)
                 break

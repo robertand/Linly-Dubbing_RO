@@ -24,7 +24,7 @@ def translator_response(messages, to_language = 'zh-CN', translator_server = 'bi
     return translation
 
 if __name__ == '__main__':
-    response = translator_response('Hello, how are you?', '中文', 'bing')
+    response = translator_response('Hello, how are you?', 'Chinese', 'bing')
     print(response)
-    response = translator_response('你好，最近怎么样？ ', 'en', 'google')
+    response = translator_response('Hello, how are things lately? ', 'en', 'google')
     print(response)

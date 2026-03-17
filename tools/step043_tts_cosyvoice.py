@@ -26,13 +26,13 @@ def load_model(model_path="models/TTS/CosyVoice-300M", device='auto'):
 
     if device=='auto':
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    logger.info(f'Loading CoxyVoice model from {model_path}')
+    logger.info(f'Loading CosyVoice model from {model_path}')
     t_start = time.time()
     if not os.path.exists(model_path):
         download_cosyvoice()
     model = CosyVoice(model_path)
     t_end = time.time()
-    logger.info(f'CoxyVoice model loaded in {t_end - t_start:.2f}s')
+    logger.info(f'CosyVoice model loaded in {t_end - t_start:.2f}s')
     
 #  <|zh|><|en|><|jp|><|yue|><|ko|> for Chinese/English/Japanese/Cantonese/Korean
 language_map = {
@@ -45,7 +45,7 @@ language_map = {
     'Korean': 'ko'
 }
 
-def tts(text, output_path, speaker_wav, model_name="models/TTS/CosyVoice-300M", device='auto', target_language='中文'):
+def tts(text, output_path, speaker_wav, model_name="models/TTS/CosyVoice-300M", device='auto', target_language='Chinese'):
     global model
     
     if os.path.exists(output_path):
@@ -73,5 +73,5 @@ if __name__ == '__main__':
     os.makedirs('playground', exist_ok=True)
     while True:
         text = input('Please enter: ')
-        tts(text, f'playground/{text}.wav', speaker_wav = speaker_wav, target_langugae = "Cantonese")
+        tts(text, f'playground/{text}.wav', speaker_wav = speaker_wav, target_language = "Cantonese")
         

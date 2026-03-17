@@ -102,9 +102,9 @@ def split_sentences(translation, use_char_based_end=True):
         speaker = item['speaker']
         translation_text = item['translation']
 
-        # 检查翻译文本是否为空
+        # Check if translation text is empty
         if not translation_text or len(translation_text.strip()) == 0:
-            # 如果翻译为空，直接使用原始时间范围并跳过分割
+            # If translation is empty, use original time range and skip splitting
             output_data.append({
                 "start": round(start, 3),
                 "end": round(item['end'], 3),
@@ -117,7 +117,7 @@ def split_sentences(translation, use_char_based_end=True):
         sentences = split_text_into_sentences(translation_text)
 
         if use_char_based_end:
-            # 避免除以零错误
+            # Avoid division by zero error
             duration_per_char = (item['end'] - item['start']) / max(1, len(translation_text))
         else:
             duration_per_char = 0
@@ -184,7 +184,7 @@ def summarize(info, transcript, target_language='English', method = 'LLM'):
                 response = ernie_response(user_messages, system=system_content)
             elif method == 'Alibaba-Qwen':
                 response = qwen_response(messages)
-            elif method == 'Ollama':  # 添加对Ollama的支持
+            elif method == 'Ollama':  # Add support for Ollama
                 response = ollama_response(messages)
             else:
                 raise Exception('Invalid method')
@@ -297,7 +297,7 @@ def _translate(summary, transcript, target_language='English', method='LLM'):
                         response = ernie_response(user_messages, system=system_content)
                     elif method == 'Alibaba-Qwen':
                         response = qwen_response(messages)
-                    elif method == 'Ollama':  # 添加对Ollama的支持
+                    elif method == 'Ollama':  # Add support for Ollama
                         response = ollama_response(messages)
                     else:
                         raise Exception('Invalid method')
