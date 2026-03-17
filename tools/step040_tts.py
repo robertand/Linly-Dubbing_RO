@@ -48,7 +48,7 @@ tts_support_languages = {
     'xtts': ['Chinese', '中文', 'English', 'Japanese', 'Korean', 'French', 'Polish', 'Spanish'],
     'bytedance': [],
     'GPTSoVits': [],
-    'EdgeTTS': ['Chinese', '中文', 'English', 'Japanese', 'Korean', 'French', 'Polish', 'Spanish', 'Romanian'],
+    'EdgeTTS': ['Chinese', '中文', 'English', 'Japanese', 'Korean', 'French', 'Polish', 'Spanish', 'Romanian', 'ro'],
     # zero_shot usage, <|zh|><|en|><|jp|><|yue|><|ko|> for Chinese/English/Japanese/Cantonese/Korean
     'cosyvoice': ['Chinese', '中文', 'Cantonese', '粤语', 'English', 'Japanese', 'Korean', 'French'],
 }

@@ -12,7 +12,6 @@ try:
     # Import functional tabs
     from tabs.full_auto_tab import FullAutoTab
     from tabs.settings_tab import SettingsTab
-    from tabs.download_tab import DownloadTab
     from tabs.demucs_tab import DemucsTab
     from tabs.asr_tab import ASRTab
     from tabs.translation_tab import TranslationTab
@@ -22,7 +21,6 @@ try:
 
     # Try to import actual functional modules
     try:
-        from tools.step000_video_downloader import download_from_url
         from tools.step010_demucs_vr import separate_all_audio_under_folder
         from tools.step020_asr import transcribe_all_audio_under_folder
         from tools.step030_translation import translate_all_transcript_under_folder
@@ -33,8 +31,8 @@ try:
     except ImportError as e:
         print(f"Warning: Could not import some tool modules: {e}")
         # Define temporary supported voice list
-        SUPPORT_VOICE = ['zh-CN-XiaoxiaoNeural', 'zh-CN-YunxiNeural',
-                         'en-US-JennyNeural', 'ja-JP-NanamiNeural']
+        SUPPORT_VOICE = ['zh-CN-XiaoxiaoNeural', 'en-US-JennyNeural',
+                         'ja-JP-NanamiNeural', 'ro-RO-AlinaNeural']
 
 except ImportError as e:
     print(f"Error: Application initialization failed: {e}")
@@ -61,7 +59,6 @@ class MainWindow(QMainWindow):
         # Add tabs
         self.tab_widget.addTab(self.full_auto_tab, "One-Click Automation")
         self.tab_widget.addTab(self.settings_tab, "Settings")
-        self.tab_widget.addTab(DownloadTab(), "Automatic Video Download")
         self.tab_widget.addTab(DemucsTab(), "Vocal Separation")
         self.tab_widget.addTab(ASRTab(), "AI Speech Recognition")
         self.tab_widget.addTab(TranslationTab(), "Subtitle Translation")

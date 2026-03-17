@@ -145,12 +145,12 @@ def split_sentences(translation, use_char_based_end=True):
     return output_data
 
 def summarize(info, transcript, target_language='English', method = 'LLM'):
-    transcript = ' '.join(line['text'] for line in transcript)
-    transcript = ensure_transcript_length(transcript, max_length=2000)
+    transcript_text = ' '.join(line['text'] for line in transcript)
+    transcript_text = ensure_transcript_length(transcript_text, max_length=2000)
     info_message = f'Title: "{info["title"]}" Author: "{info["uploader"]}". ' 
     
     if method in ['Google Translate', 'Bing Translate']:
-        full_description = f'{info_message}\n{transcript}\n{info_message}\n'
+        full_description = f'{info_message}\n{transcript_text}\n{info_message}\n'
         translation = translator_response(full_description, target_language)
         return {
                 'title': translator_response(info['title'], target_language),
@@ -159,11 +159,11 @@ def summarize(info, transcript, target_language='English', method = 'LLM'):
                 'language': target_language
             }
 
-    full_description = f'The following is the full content of the video:\n{info_message}\n{transcript}\n{info_message}\nAccording to the above content, detailedly Summarize the video in JSON format:\n```json\n{{"title": "", "summary": ""}}\n```'
+    full_description = f'The following is the full content of the video:\n{info_message}\n{transcript_text}\n{info_message}\nAccording to the above content, detailedly Summarize the video in JSON format:\n```json\n{{"title": "", "summary": ""}}\n```'
     
     messages = [
         {'role': 'system',
-            'content': f'You are a expert in the field of this video. Please detailedly summarize the video in JSON format.\n```json\n{{"title": "the title of the video", "summary", "the summary of the video"}}\n```'},
+            'content': f'You are a expert in the field of this video. Please detailedly summarize the video in JSON format.\n```json\n{{"title": "the title of the video", "summary": "the summary of the video"}}\n```'},
         {'role': 'user', 'content': full_description},
     ]
     retry_message=''
@@ -171,7 +171,7 @@ def summarize(info, transcript, target_language='English', method = 'LLM'):
     for retry in range(9):
         try:
             messages = [
-                {'role': 'system', 'content': f'You are a expert in the field of this video. Please summarize the video in JSON format.\n```json\n{{"title": "the title of the video", "summary", "the summary of the video"}}\n```'},
+                {'role': 'system', 'content': f'You are a expert in the field of this video. Please summarize the video in JSON format.\n```json\n{{"title": "the title of the video", "summary": "the summary of the video"}}\n```'},
                 {'role': 'user', 'content': full_description+retry_message},
             ]
             if method == 'LLM':
@@ -216,9 +216,9 @@ def summarize(info, transcript, target_language='English', method = 'LLM'):
             
     messages = [
         {'role': 'system',
-            'content': f'You are a native speaker of {target_language}. Please translate the title and summary into {target_language} in JSON format. ```json\n{{"title": "the {target_language} title of the video", "summary", "the {target_language} summary of the video", "tags": [list of tags in {target_language}]}}\n```.'},
+            'content': f'You are a native speaker of {target_language}. Please translate the title and summary into {target_language} in JSON format. ```json\n{{"title": "the {target_language} title of the video", "summary": "the {target_language} summary of the video", "tags": [list of tags in {target_language}]}}\n```.'},
         {'role': 'user',
-            'content': f'The title of the video is "{summary["title"]}". The summary of the video is "{summary["summary"]}". Tags: {info["tags"]}.\nPlease translate the above title and summary and tags into {target_language} in JSON format. ```json\n{{"title": "", "summary", ""， "tags": []}}\n```. Remember to tranlate the title and the summary and tags into {target_language} in JSON.'},
+            'content': f'The title of the video is "{summary["title"]}". The summary of the video is "{summary["summary"]}". Tags: {info["tags"]}.\nPlease translate the above title and summary and tags into {target_language} in JSON format. ```json\n{{"title": "", "summary": ""， "tags": []}}\n```. Remember to translate the title and the summary and tags into {target_language} in JSON.'},
     ]
     while True:
         try: 

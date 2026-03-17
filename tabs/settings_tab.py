@@ -54,21 +54,9 @@ class SettingsTab(QWidget):
     def add_config_widgets(self):
         """Add all configuration widgets"""
         # Video Configuration
-        self.scroll_layout.addWidget(QLabel("=== Video Download Configuration ==="))
-        self.scroll_layout.addWidget(QLabel("Video Output Folder"))
-        self.video_folder = self.add_label_value("videos", "Video output to this folder")
-
-        # Resolution
-        self.resolution = RadioButtonGroup(
-            ['4320p', '2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p'],
-            "Resolution",
-            '1080p'
-        )
-        self.scroll_layout.addWidget(self.resolution)
-
-        # Video download count
-        self.video_count = CustomSlider(1, 100, 1, "Number of Videos to Download", 5)
-        self.scroll_layout.addWidget(self.video_count)
+        self.scroll_layout.addWidget(QLabel("=== General Configuration ==="))
+        self.scroll_layout.addWidget(QLabel("Processing Output Folder"))
+        self.video_folder = self.add_label_value("videos", "All processed files will be saved here")
 
         # Audio processing configuration
         self.scroll_layout.addWidget(QLabel("=== Audio Processing Configuration ==="))
@@ -213,8 +201,6 @@ class SettingsTab(QWidget):
         """Get current configuration from UI controls"""
         config = {
             "video_folder": self.video_folder.text(),
-            "resolution": self.resolution.value(),
-            "video_count": self.video_count.value(),
             "model": self.model.value(),
             "device": self.device.value(),
             "shifts": self.shifts.value(),
@@ -248,13 +234,6 @@ class SettingsTab(QWidget):
             self.video_folder.setText(config.get("video_folder", "videos"))
 
             # Apply robust selection logic for each radio button group
-            # Resolution
-            resolution_value = config.get("resolution", "1080p")
-            self._set_radio_button(self.resolution.buttons, resolution_value, "1080p")
-
-            # Video count
-            self.video_count.setValue(config.get("video_count", 5))
-
             # Model
             model_value = config.get("model", "htdemucs_ft")
             self._set_radio_button(self.model.buttons, model_value, "htdemucs_ft")
@@ -400,8 +379,6 @@ class SettingsTab(QWidget):
             # Apply default configuration
             default_config = {
                 "video_folder": "videos",
-                "resolution": "1080p",
-                "video_count": 5,
                 "model": "htdemucs_ft",
                 "device": "auto",
                 "shifts": 5,
@@ -412,10 +389,10 @@ class SettingsTab(QWidget):
                 "min_speakers": None,
                 "max_speakers": None,
                 "translation_method": "LLM",
-                "target_language_translation": "Simplified Chinese",
+            "target_language_translation": "Romanian",
                 "tts_method": "EdgeTTS",
-                "target_language_tts": "Chinese",
-                "edge_tts_voice": "zh-CN-XiaoxiaoNeural",
+            "target_language_tts": "Romanian",
+            "edge_tts_voice": "ro-RO-AlinaNeural",
                 "add_subtitles": True,
                 "speed_factor": 1.00,
                 "frame_rate": 30,

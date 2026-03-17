@@ -22,7 +22,8 @@ language_map = {
     'Korean': 'ko-KR-SunHiNeural',
     'Spanish': 'es-ES-ElviraNeural',
     'French': 'fr-FR-DeniseNeural',
-    'Romanian': 'ro-RO-AlinaNeural'
+    'Romanian': 'ro-RO-AlinaNeural',
+    'ro': 'ro-RO-AlinaNeural'
 }
 
 def tts(text, output_path, target_language='Chinese', voice = 'zh-CN-XiaoxiaoNeural'):

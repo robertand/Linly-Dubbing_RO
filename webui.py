@@ -1,5 +1,4 @@
 import gradio as gr
-from tools.step000_video_downloader import download_from_url
 from tools.step010_demucs_vr import separate_all_audio_under_folder
 from tools.step020_asr import transcribe_all_audio_under_folder
 from tools.step030_translation import translate_all_transcript_under_folder
@@ -13,11 +12,7 @@ full_auto_interface = gr.Interface(
     fn=do_everything,
     inputs=[
         gr.Textbox(label='Video Output Folder', value='videos'),
-        gr.Textbox(label='Video URL', placeholder='Please enter the URL of a Youtube or Bilibili video, playlist, or channel',
-                   value='https://www.bilibili.com/video/BV1kr421M7vz/'),
-        gr.Video(label='Upload Local Video (Optional)'),
-        gr.Slider(minimum=1, maximum=100, step=1, label='Number of Videos to Download', value=5),
-        gr.Radio(['4320p', '2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p'], label='Resolution', value='1080p'),
+        gr.Video(label='Upload Local Video'),
 
         gr.Radio(['htdemucs', 'htdemucs_ft', 'htdemucs_6s', 'hdemucs_mmi', 'mdx', 'mdx_extra', 'mdx_q', 'mdx_extra_q', 'SIG'], label='Model', value='htdemucs_ft'),
         gr.Radio(['auto', 'cuda', 'cpu'], label='Compute Device', value='auto'),
@@ -31,11 +26,11 @@ full_auto_interface = gr.Interface(
         gr.Radio([None, 1, 2, 3, 4, 5, 6, 7, 8, 9], label='Max Speakers', value=None),
 
         gr.Dropdown(['OpenAI', 'LLM', 'Google Translate', 'Bing Translate', 'Ernie'], label='Translation Method', value='LLM'),
-        gr.Dropdown(['Simplified Chinese', 'Traditional Chinese', 'English', 'Cantonese', 'Japanese', 'Korean', 'Romanian'], label='Target Language (Translation)', value='Simplified Chinese'),
+        gr.Dropdown(['Simplified Chinese', 'Traditional Chinese', 'English', 'Cantonese', 'Japanese', 'Korean', 'Romanian'], label='Target Language (Translation)', value='Romanian'),
 
-        gr.Dropdown(['xtts', 'cosyvoice', 'EdgeTTS'], label='AI Speech Generation Method', value='xtts'),
-        gr.Dropdown(['Chinese', 'English', 'Cantonese', 'Japanese', 'Korean', 'Spanish', 'French', 'Romanian'], label='Target Language (TTS)', value='Chinese'),
-        gr.Dropdown(SUPPORT_VOICE, value='zh-CN-XiaoxiaoNeural', label='EdgeTTS Voice Selection'),
+        gr.Dropdown(['xtts', 'cosyvoice', 'EdgeTTS'], label='AI Speech Generation Method', value='EdgeTTS'),
+        gr.Dropdown(['Chinese', 'English', 'Cantonese', 'Japanese', 'Korean', 'Spanish', 'French', 'Romanian'], label='Target Language (TTS)', value='Romanian'),
+        gr.Dropdown(SUPPORT_VOICE, value='ro-RO-AlinaNeural', label='EdgeTTS Voice Selection'),
 
         gr.Checkbox(label='Add Subtitles', value=True),
         gr.Slider(minimum=0.5, maximum=2, step=0.05, label='Speed Factor', value=1.00),
@@ -45,31 +40,11 @@ full_auto_interface = gr.Interface(
         gr.Slider(minimum=0, maximum=1, step=0.05, label='Video Volume', value=1.0),
         gr.Radio(['4320p', '2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p'], label='Resolution', value='1080p'),
 
-        gr.Slider(minimum=1, maximum=100, step=1, label='Max Workers', value=1),
         gr.Slider(minimum=1, maximum=10, step=1, label='Max Retries', value=3),
     ],
     outputs=[gr.Text(label='Synthesis Status'), gr.Video(label='Sample Result Video')],
     allow_flagging='never',
 )    
-
-# Video Download Interface
-download_interface = gr.Interface(
-    fn=download_from_url,
-    inputs=[
-        gr.Textbox(label='Video URL', placeholder='Please enter the URL of a Youtube or Bilibili video, playlist, or channel',
-                   value='https://www.bilibili.com/video/BV1kr421M7vz/'),
-        gr.Textbox(label='Video Output Folder', value='videos'),
-        gr.Radio(['4320p', '2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p'], label='Resolution', value='1080p'),
-        gr.Slider(minimum=1, maximum=100, step=1, label='Number of Videos to Download', value=5),
-        # gr.Checkbox(label='Single Video', value=False),
-    ],
-    outputs=[
-        gr.Textbox(label='Download Status'),
-        gr.Video(label='Example Video'),
-        gr.Json(label='Download Information')
-    ],
-    allow_flagging='never',
-)
 
 # Vocal Separation Interface
 demucs_interface = gr.Interface(
@@ -182,7 +157,6 @@ app = gr.TabbedInterface(
     theme=my_theme,
     interface_list=[
         full_auto_interface,
-        download_interface,
         demucs_interface,
         asr_inference,
         translation_interface,
@@ -192,7 +166,7 @@ app = gr.TabbedInterface(
     ],
     tab_names=[
         'One-Click Automation',
-        'Automatic Video Download', 'Vocal Separation', 'AI Speech Recognition', 'Subtitle Translation', 'AI Speech Synthesis', 'Video Synthesis',
+        'Vocal Separation', 'AI Speech Recognition', 'Subtitle Translation', 'AI Speech Synthesis', 'Video Synthesis',
         'Linly-Talker Lip-Sync (Developing)'],
     title='Intelligent Multi-language AI Dubbing/Translation Tool - Linly-Dubbing'
 )

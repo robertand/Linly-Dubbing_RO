@@ -5,7 +5,6 @@ import traceback
 
 import torch
 from loguru import logger
-from .step000_video_downloader import get_info_list_from_url, download_single_video, get_target_folder
 from .step010_demucs_vr import separate_all_audio_under_folder, init_demucs, release_model
 from .step020_asr import transcribe_all_audio_under_folder
 from .step021_asr_whisperx import init_whisperx, init_diarize
@@ -92,7 +91,7 @@ def initialize_models(tts_method, asr_method, diarization):
             raise
 
 
-def process_video(info, root_folder, resolution,
+def process_video(video_path, root_folder,
                   demucs_model, device, shifts,
                   asr_method, whisper_model, batch_size, diarization, whisper_min_speakers, whisper_max_speakers,
                   translation_method, translation_target_language,
@@ -100,18 +99,15 @@ def process_video(info, root_folder, resolution,
                   subtitles, speed_up, fps, background_music, bgm_volume, video_volume,
                   target_resolution, max_retries, progress_callback=None):
     """
-    Full workflow for processing a single video, with progress callback.
+    Full workflow for processing a single local video, with progress callback.
 
     Args:
         progress_callback: Callback function to report progress and status, format: progress_callback(progress_percent, status_message)
     """
-    local_time = time.localtime()
-
     # Define progress stages and weights
     stages = [
-        ("Downloading video...", 10),  # 10%
-        ("Vocal separation...", 15),  # 15%
-        ("AI speech recognition...", 20),  # 20%
+        ("Vocal separation...", 20),  # 20%
+        ("AI speech recognition...", 25),  # 25%
         ("Subtitle translation...", 25),  # 25%
         ("AI speech synthesis...", 20),  # 20%
         ("Video synthesis...", 10)  # 10%
@@ -126,32 +122,21 @@ def process_video(info, root_folder, resolution,
 
     for retry in range(max_retries):
         try:
-            # Report entry to download stage
-            stage_name, stage_weight = stages[current_stage]
-            if progress_callback:
-                progress_callback(progress_base, stage_name)
+            # Prepare folder for local video
+            import shutil
+            original_file_name = os.path.basename(video_path)
+            new_folder_name = os.path.splitext(original_file_name)[0]
+            folder = os.path.join(root_folder, new_folder_name)
+            os.makedirs(folder, exist_ok=True)
 
-            if isinstance(info, str) and info.endswith('.mp4'):
-                folder = os.path.dirname(info)
-                # os.rename(info, os.path.join(folder, 'download.mp4'))
-            else:
-                folder = get_target_folder(info, root_folder)
-                if folder is None:
-                    error_msg = f'Could not get video target folder: {info["title"]}'
-                    logger.warning(error_msg)
-                    return False, None, error_msg
+            new_file_path = os.path.join(folder, "download.mp4")
+            if not os.path.exists(new_file_path):
+                logger.info(f"Copying {video_path} to {new_file_path}")
+                shutil.copy(video_path, new_file_path)
 
-                folder = download_single_video(info, root_folder, resolution)
-                if folder is None:
-                    error_msg = f'Failed to download video: {info["title"]}'
-                    logger.warning(error_msg)
-                    return False, None, error_msg
+            logger.info(f'Processing video in folder: {folder}')
 
-            logger.info(f'Processing video: {folder}')
-
-            # Finish download stage, enter vocal separation stage
-            current_stage += 1
-            progress_base += stage_weight
+            # Vocal separation stage
             stage_name, stage_weight = stages[current_stage]
             if progress_callback:
                 progress_callback(progress_base, stage_name)
@@ -245,7 +230,7 @@ def process_video(info, root_folder, resolution,
             return True, output_video, "Processing successful"
         except Exception as e:
             stack_trace = traceback.format_exc()
-            error_msg = f'Error occurred during video processing {info["title"] if isinstance(info, dict) else info}: {str(e)}\n{stack_trace}'
+            error_msg = f'Error occurred during video processing {os.path.basename(video_path)}: {str(e)}\n{stack_trace}'
             logger.error(error_msg)
             if retry < max_retries - 1:
                 logger.info(f'Attempting retry {retry + 2}/{max_retries}...')
@@ -255,7 +240,7 @@ def process_video(info, root_folder, resolution,
     return False, None, f"Reached maximum retry count: {max_retries}"
 
 
-def do_everything(root_folder, url, local_video=None, num_videos=5, resolution='1080p',
+def do_everything(root_folder, video_path,
                   demucs_model='htdemucs_ft', device='auto', shifts=5,
                   asr_method='WhisperX', whisper_model='large', batch_size=32, diarization=False,
                   whisper_min_speakers=None, whisper_max_speakers=None,
@@ -263,47 +248,24 @@ def do_everything(root_folder, url, local_video=None, num_videos=5, resolution='
                   tts_method='xtts', tts_target_language='Chinese', voice='zh-CN-XiaoxiaoNeural',
                   subtitles=True, speed_up=1.00, fps=30,
                   background_music=None, bgm_volume=0.5, video_volume=1.0, target_resolution='1080p',
-                  max_workers=3, max_retries=5, progress_callback=None):
+                  max_retries=5, progress_callback=None):
     """
-    Main entry point to process entire video workflow, with progress callback.
+    Main entry point to process local video workflow, with progress callback.
 
     Args:
         progress_callback: Callback function to report progress and status, format: progress_callback(progress_percent, status_message)
     """
     try:
-        success_list = []
-        fail_list = []
-        error_details = []
-
         # Log task start and all parameters
         logger.info("-" * 50)
-        if local_video:
-            logger.info(f"Starting task with local video: {local_video}")
-            url = local_video
-        else:
-            logger.info(f"Starting task with URL: {url}")
-        logger.info(f"Params: Output Folder={root_folder}, Video Count={num_videos}, Resolution={resolution}")
+        logger.info(f"Starting task with local video: {video_path}")
+        logger.info(f"Params: Output Folder={root_folder}")
         logger.info(f"Vocal Separation: Model={demucs_model}, Device={device}, Shifts={shifts}")
         logger.info(f"Speech Recognition: Method={asr_method}, Model={whisper_model}, Batch Size={batch_size}")
         logger.info(f"Translation: Method={translation_method}, Target Language={translation_target_language}")
         logger.info(f"Speech Synthesis: Method={tts_method}, Target Language={tts_target_language}, Voice={voice}")
         logger.info(f"Video Synthesis: Subtitles={subtitles}, Speed={speed_up}, FPS={fps}, Resolution={target_resolution}")
         logger.info("-" * 50)
-
-        # Differentiate between local file and URL
-        is_local_video = False
-        if local_video:
-            url = local_video
-            is_local_video = True
-            logger.info(f"Using uploaded local video: {url}")
-        elif os.path.exists(url) and any(url.lower().endswith(ext) for ext in ['.mp4', '.avi', '.mkv', '.mov', '.flv']):
-            is_local_video = True
-            logger.info(f"Using local video path: {url}")
-
-        if not is_local_video:
-            url = url.replace(' ', '').replace('，', '\n').replace(',', '\n')
-
-        urls = [_ for _ in url.split('\n') if _]
 
         # Initialize models
         try:
@@ -315,104 +277,22 @@ def do_everything(root_folder, url, local_video=None, num_videos=5, resolution='
             logger.error(f"Failed to initialize models: {str(e)}\n{stack_trace}")
             return f"Failed to initialize models: {str(e)}", None
 
-        out_video = None
-        if is_local_video:
-            try:
-                import shutil
-                # Use the path directly
-                source_path = url
-                original_file_name = os.path.basename(source_path)
+        success, output_video, error_msg = process_video(
+            video_path, root_folder,
+            demucs_model, device, shifts,
+            asr_method, whisper_model, batch_size, diarization, whisper_min_speakers, whisper_max_speakers,
+            translation_method, translation_target_language,
+            tts_method, tts_target_language, voice,
+            subtitles, speed_up, fps, background_music, bgm_volume, video_volume,
+            target_resolution, max_retries, progress_callback
+        )
 
-                # Remove extension to generate folder name
-                new_folder_name = os.path.splitext(original_file_name)[0]
-
-                # Build full path of new folder
-                new_folder_path = os.path.join(root_folder, new_folder_name)
-
-                # Create folder under root_folder
-                os.makedirs(new_folder_path, exist_ok=True)
-
-                # Build full path of new location
-                new_file_path = os.path.join(new_folder_path, "download.mp4")
-
-                # Copy video file to new folder and rename
-                logger.info(f"Copying {source_path} to {new_file_path}")
-                shutil.copy(source_path, new_file_path)
-
-                success, output_video, error_msg = process_video(
-                    new_file_path, root_folder, resolution,
-                    demucs_model, device, shifts,
-                    asr_method, whisper_model, batch_size, diarization, whisper_min_speakers, whisper_max_speakers,
-                    translation_method, translation_target_language,
-                    tts_method, tts_target_language, voice,
-                    subtitles, speed_up, fps, background_music, bgm_volume, video_volume,
-                    target_resolution, max_retries, progress_callback
-                )
-
-                if success:
-                    logger.info(f"Video processing successful: {new_file_path}")
-                    return 'Processing successful', output_video
-                else:
-                    logger.error(f"Video processing failed: {new_file_path}, Error: {error_msg}")
-                    return f'Processing failed: {error_msg}', None
-            except Exception as e:
-                stack_trace = traceback.format_exc()
-                logger.error(f"Failed to process local video: {str(e)}\n{stack_trace}")
-                return f"Failed to process local video: {str(e)}", None
+        if success:
+            logger.info(f"Video processing successful: {video_path}")
+            return 'Processing successful', output_video
         else:
-            try:
-                videos_info = []
-                if progress_callback:
-                    progress_callback(10, "Fetching video information...")
-
-                for video_info in get_info_list_from_url(urls, num_videos):
-                    videos_info.append(video_info)
-
-                if not videos_info:
-                    return "Failed to fetch video information, please check URL", None
-
-                for info in videos_info:
-                    try:
-                        success, output_video, error_msg = process_video(
-                            info, root_folder, resolution,
-                            demucs_model, device, shifts,
-                            asr_method, whisper_model, batch_size, diarization, whisper_min_speakers,
-                            whisper_max_speakers,
-                            translation_method, translation_target_language,
-                            tts_method, tts_target_language, voice,
-                            subtitles, speed_up, fps, background_music, bgm_volume, video_volume,
-                            target_resolution, max_retries, progress_callback
-                        )
-
-                        if success:
-                            success_list.append(info)
-                            out_video = output_video
-                            logger.info(f"Successfully processed video: {info['title'] if isinstance(info, dict) else info}")
-                        else:
-                            fail_list.append(info)
-                            error_details.append(f"{info['title'] if isinstance(info, dict) else info}: {error_msg}")
-                            logger.error(
-                                f"Failed to process video: {info['title'] if isinstance(info, dict) else info}, Error: {error_msg}")
-                    except Exception as e:
-                        stack_trace = traceback.format_exc()
-                        fail_list.append(info)
-                        error_details.append(f"{info['title'] if isinstance(info, dict) else info}: {str(e)}")
-                        logger.error(
-                            f"Error processing video: {info['title'] if isinstance(info, dict) else info}, Error: {str(e)}\n{stack_trace}")
-            except Exception as e:
-                stack_trace = traceback.format_exc()
-                logger.error(f"Failed to get video list: {str(e)}\n{stack_trace}")
-                return f"Failed to get video list: {str(e)}", None
-
-        # Log summary of processing results
-        logger.info("-" * 50)
-        logger.info(f"Processing complete: Successful={len(success_list)}, Failed={len(fail_list)}")
-        if error_details:
-            logger.info("Failure details:")
-            for detail in error_details:
-                logger.info(f"  - {detail}")
-
-        return f'Successful: {len(success_list)}\nFailed: {len(fail_list)}', out_video
+            logger.error(f"Video processing failed: {video_path}, Error: {error_msg}")
+            return f'Processing failed: {error_msg}', None
 
     except Exception as e:
         # Catch any errors in the overall process
@@ -423,9 +303,9 @@ def do_everything(root_folder, url, local_video=None, num_videos=5, resolution='
 
 
 if __name__ == '__main__':
+    # Example local video processing
     do_everything(
         root_folder='videos',
-        url='https://www.bilibili.com/video/BV1kr421M7vz/',
+        video_path='input_video.mp4',
         translation_method='LLM',
-        # translation_method = 'Google Translate', translation_target_language = 'Simplified Chinese',
     )

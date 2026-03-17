@@ -42,7 +42,8 @@ language_map = {
     'Japanese': 'jp',
     '粤语': 'yue',
     'Cantonese': 'yue',
-    'Korean': 'ko'
+    'Korean': 'ko',
+    'French': 'fr'
 }
 
 def tts(text, output_path, speaker_wav, model_name="models/TTS/CosyVoice-300M", device='auto', target_language='Chinese'):

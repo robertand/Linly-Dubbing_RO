@@ -8,8 +8,8 @@ try:
     from tools.utils import SUPPORT_VOICE
 except ImportError:
     # Define temporary support voice list
-    SUPPORT_VOICE = ['zh-CN-XiaoxiaoNeural', 'zh-CN-YunxiNeural',
-                     'en-US-JennyNeural', 'ja-JP-NanamiNeural']
+    SUPPORT_VOICE = ['zh-CN-XiaoxiaoNeural', 'en-US-JennyNeural',
+                     'ja-JP-NanamiNeural', 'ro-RO-AlinaNeural']
 
 
 class TTSTab(QWidget):

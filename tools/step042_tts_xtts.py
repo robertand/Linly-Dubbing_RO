@@ -55,6 +55,7 @@ language_map = {
     'Hungarian': 'hu',
     'Hindi': 'hi',
     'Korean': 'ko',
+    'Japanese': 'ja',
 }
 def tts(text, output_path, speaker_wav, model_name="models/TTS/XTTS-v2", device='auto', target_language='Chinese'):
     global model

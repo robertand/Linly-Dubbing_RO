@@ -16,8 +16,8 @@ try:
     from tools.utils import SUPPORT_VOICE
 except ImportError:
     # Define temporary support voice list
-    SUPPORT_VOICE = ['zh-CN-XiaoxiaoNeural', 'zh-CN-YunxiNeural',
-                     'en-US-JennyNeural', 'ja-JP-NanamiNeural']
+    SUPPORT_VOICE = ['zh-CN-XiaoxiaoNeural', 'en-US-JennyNeural',
+                     'ja-JP-NanamiNeural', 'ro-RO-AlinaNeural']
 
 
 # Create a signal class for thread communication
@@ -37,27 +37,24 @@ class FullAutoTab(QWidget):
         # Create main horizontal layout, left for URL input, right for processing buttons and video player
         self.main_layout = QHBoxLayout(self)
 
-        # Left configuration area - keep only URL input
+        # Left configuration area - local video selection
         self.left_widget = QWidget()
         self.left_layout = QVBoxLayout(self.left_widget)
 
-        # Add video URL input box
-        self.video_url_label = QLabel("Video URL")
-        self.video_url = QLineEdit()
-        self.video_url.setPlaceholderText("Please enter the URL of a Youtube or Bilibili video, playlist, or channel")
-        self.video_url.setText("https://www.bilibili.com/video/BV1kr421M7vz/")
+        # Video path selection
+        self.video_path_label = QLabel("Video File")
+        self.video_path_input = QLineEdit()
+        self.video_path_input.setPlaceholderText("Select a local video file for processing")
+        self.video_path_input.setReadOnly(True)
 
         # Select local video button
-        self.select_video_button = QPushButton("Select Local Video")
+        self.select_video_button = QPushButton("Select Video")
         self.select_video_button.clicked.connect(self.select_local_video)
+        self.select_video_button.setMinimumHeight(40)
 
-        self.left_layout.addWidget(self.video_url_label)
-        self.left_layout.addWidget(self.video_url)
-
-        # Local video selection layout
-        local_video_layout = QHBoxLayout()
-        local_video_layout.addWidget(self.select_video_button)
-        self.left_layout.addLayout(local_video_layout)
+        self.left_layout.addWidget(self.video_path_label)
+        self.left_layout.addWidget(self.video_path_input)
+        self.left_layout.addWidget(self.select_video_button)
 
         # Add a configuration summary
         self.config_summary = QTextEdit()
@@ -234,7 +231,7 @@ class FullAutoTab(QWidget):
             self, "Select Video File", "", "Video Files (*.mp4 *.avi *.mkv *.mov *.flv)"
         )
         if file_path:
-            self.video_url.setText(file_path)
+            self.video_path_input.setText(file_path)
             self.append_log(f"Selected local video file: {file_path}")
 
     def load_config(self):
@@ -272,17 +269,21 @@ class FullAutoTab(QWidget):
         try:
             self.signals.log.emit("Starting process...")
             self.signals.progress.emit(0, "Initializing process...")
-            url = self.video_url.text()
+            local_video_path = self.video_path_input.text()
+
+            if not local_video_path or not os.path.exists(local_video_path):
+                self.signals.log.emit("Error: No valid local video file selected.")
+                self.signals.finished.emit("Failed: No video selected", "")
+                return
 
             # Log important parameters
             self.signals.log.emit(f"Video folder: {config.get('video_folder', 'videos')}")
-            self.signals.log.emit(f"Video URL: {url}")
+            self.signals.log.emit(f"Input Video: {local_video_path}")
             self.signals.log.emit(f"Resolution: {config.get('resolution', '1080p')}")
 
             # More detailed parameter logging
             self.signals.log.emit("-" * 50)
             self.signals.log.emit("Processing Parameters:")
-            self.signals.log.emit(f"Number of Videos to Download: {config.get('video_count', 5)}")
             self.signals.log.emit(f"Resolution: {config.get('resolution', '1080p')}")
             self.signals.log.emit(f"Vocal Separation Model: {config.get('model', 'htdemucs_ft')}")
             self.signals.log.emit(f"Compute Device: {config.get('device', 'auto')}")
@@ -293,39 +294,35 @@ class FullAutoTab(QWidget):
             self.signals.log.emit(f"TTS Method: {config.get('tts_method', 'EdgeTTS')}")
             self.signals.log.emit("-" * 50)
 
-            # Update progress info - Step 1: Downloading Video
-            self.signals.progress.emit(5, f"{self.progress_steps[0]} (5%)")
+            # Update progress info - Step 1: Preparing Video
+            self.signals.progress.emit(5, "Preparing Video (5%)")
 
             # Actual processing call
             result, video_path = do_everything(
-                config.get('video_folder', 'videos'),  # Use config param or default
-                url,
-                None, # local_video parameter
-                config.get('video_count', 5),
-                config.get('resolution', '1080p'),
-                config.get('model', 'htdemucs_ft'),
-                config.get('device', 'auto'),
-                config.get('shifts', 5),
-                config.get('asr_model', 'WhisperX'),
-                config.get('whisperx_size', 'large'),
-                config.get('batch_size', 32),
-                config.get('separate_speakers', True),
-                config.get('min_speakers', None),
-                config.get('max_speakers', None),
-                config.get('translation_method', 'LLM'),
-                config.get('target_language_translation', 'Simplified Chinese'),
-                config.get('tts_method', 'EdgeTTS'),
-                config.get('target_language_tts', 'Chinese'),
-                config.get('edge_tts_voice', 'zh-CN-XiaoxiaoNeural'),
-                config.get('add_subtitles', True),
-                config.get('speed_factor', 1.00),
-                config.get('frame_rate', 30),
-                config.get('background_music', None),
-                config.get('bg_music_volume', 0.5),
-                config.get('video_volume', 1.0),
-                config.get('output_resolution', '1080p'),
-                config.get('max_workers', 1),
-                config.get('max_retries', 3)
+                root_folder=config.get('video_folder', 'videos'),
+                video_path=local_video_path,
+                demucs_model=config.get('model', 'htdemucs_ft'),
+                device=config.get('device', 'auto'),
+                shifts=config.get('shifts', 5),
+                asr_method=config.get('asr_method', 'WhisperX'),
+                whisper_model=config.get('whisperx_size', 'large'),
+                batch_size=config.get('batch_size', 32),
+                diarization=config.get('separate_speakers', True),
+                whisper_min_speakers=config.get('min_speakers', None),
+                whisper_max_speakers=config.get('max_speakers', None),
+                translation_method=config.get('translation_method', 'LLM'),
+                translation_target_language=config.get('target_language_translation', 'Romanian'),
+                tts_method=config.get('tts_method', 'EdgeTTS'),
+                tts_target_language=config.get('target_language_tts', 'Romanian'),
+                voice=config.get('edge_tts_voice', 'ro-RO-AlinaNeural'),
+                subtitles=config.get('add_subtitles', True),
+                speed_up=config.get('speed_factor', 1.00),
+                fps=config.get('frame_rate', 30),
+                background_music=config.get('background_music', None),
+                bgm_volume=config.get('bg_music_volume', 0.5),
+                video_volume=config.get('video_volume', 1.0),
+                target_resolution=config.get('output_resolution', '1080p'),
+                max_retries=config.get('max_retries', 3)
             )
 
             # Finish processing, set 100% progress
@@ -351,6 +348,10 @@ class FullAutoTab(QWidget):
         if self.is_processing:
             return
 
+        if not self.video_path_input.text():
+            QMessageBox.warning(self, "Warning", "Please select a video file first!")
+            return
+
         self.is_processing = True
         self.run_button.setEnabled(False)
         self.stop_button.setEnabled(True)
@@ -367,7 +368,7 @@ class FullAutoTab(QWidget):
         # Log start processing
         self.append_log("-" * 50)
         self.append_log(f"Starting Process - {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        self.append_log(f"Video URL: {self.video_url.text()}")
+        self.append_log(f"Video Path: {self.video_path_input.text()}")
 
         # Create and start processing thread
         self.worker_thread = threading.Thread(target=self.process_thread)
