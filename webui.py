@@ -90,7 +90,7 @@ translation_interface = gr.Interface(
     inputs=[
         gr.Textbox(label='Video Folder', value='videos'),
         gr.Dropdown(['OpenAI', 'LLM', 'Google Translate', 'Bing Translate', 'Ernie'], label='Translation Method', value='LLM'),
-        gr.Dropdown(['Simplified Chinese', 'Traditional Chinese', 'English', 'Cantonese', 'Japanese', 'Korean', 'Romanian'], label='Target Language', value='Simplified Chinese'),
+        gr.Dropdown(['Simplified Chinese', 'Traditional Chinese', 'English', 'Cantonese', 'Japanese', 'Korean', 'Romanian'], label='Target Language', value='Romanian'),
     ],
     outputs=[
         gr.Text(label='Translation Status'),
@@ -105,9 +105,9 @@ tts_interface = gr.Interface(
     fn=generate_all_wavs_under_folder,
     inputs=[
         gr.Textbox(label='Video Folder', value='videos'),
-        gr.Dropdown(['xtts', 'cosyvoice', 'EdgeTTS'], label='AI Speech Generation Method', value='xtts'),
-        gr.Dropdown(['Chinese', 'English', 'Cantonese', 'Japanese', 'Korean', 'Spanish', 'French', 'Romanian'], label='Target Language', value='Chinese'),
-        gr.Dropdown(SUPPORT_VOICE, value='zh-CN-XiaoxiaoNeural', label='EdgeTTS Voice Selection'),
+        gr.Dropdown(['xtts', 'cosyvoice', 'EdgeTTS'], label='AI Speech Generation Method', value='EdgeTTS'),
+        gr.Dropdown(['Chinese', 'English', 'Cantonese', 'Japanese', 'Korean', 'Spanish', 'French', 'Romanian'], label='Target Language', value='Romanian'),
+        gr.Dropdown(SUPPORT_VOICE, value='ro-RO-AlinaNeural', label='EdgeTTS Voice Selection'),
     ],
     outputs=[
         gr.Text(label='Synthesis Status'),
@@ -175,6 +175,6 @@ if __name__ == '__main__':
     app.launch(
         server_name="127.0.0.1", 
         server_port=6006,
-        share=True,
+        share=False,
         inbrowser=True
     )

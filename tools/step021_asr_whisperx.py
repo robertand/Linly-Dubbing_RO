@@ -63,7 +63,8 @@ def load_diarize_model(device='auto'):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     t_start = time.time()
     try:
-        diarize_model = whisperx.DiarizationPipeline(use_auth_token=os.getenv('HF_TOKEN'), device=device)
+        from whisperx.diarize import DiarizationPipeline
+        diarize_model = DiarizationPipeline(use_auth_token=os.getenv('HF_TOKEN'), device=device)
         t_end = time.time()
         logger.info(f'Loaded diarization model in {t_end - t_start:.2f}s')
     except Exception as e:

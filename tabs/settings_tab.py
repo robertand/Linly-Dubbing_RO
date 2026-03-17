@@ -140,9 +140,15 @@ class SettingsTab(QWidget):
         # EdgeTTS voice selection
         self.edge_tts_voice_label = QLabel("EdgeTTS Voice Selection")
         self.scroll_layout.addWidget(self.edge_tts_voice_label)
+
+        # Use a subset of SUPPORT_VOICE for the radio buttons to keep it manageable,
+        # or just the recommended ones including Romanian
+        recommended_voices = ['zh-CN-XiaoxiaoNeural', 'en-US-JennyNeural', 'ja-JP-NanamiNeural',
+                              'ro-RO-AlinaNeural', 'ro-RO-EmilNeural']
+
         self.edge_tts_voice = RadioButtonGroup(
-            ['zh-CN-XiaoxiaoNeural', 'zh-CN-YunxiNeural', 'en-US-JennyNeural', 'ja-JP-NanamiNeural'],
-            "EdgeTTS Voice Selection", 'zh-CN-XiaoxiaoNeural')
+            recommended_voices,
+            "EdgeTTS Voice Selection", 'ro-RO-AlinaNeural')
         self.scroll_layout.addWidget(self.edge_tts_voice)
 
         # Video synthesis configuration
