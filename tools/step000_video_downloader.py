@@ -43,9 +43,9 @@ def download_single_video(info, folder_path, resolution='1080p'):
         'writethumbnail': True,
         'outtmpl': os.path.join(folder_path, sanitized_uploader, f'{upload_date} {sanitized_title}', 'download'),
         'ignoreerrors': True,
-        'cookiefile' : 'cookies.txt' if os.path.exists("cookies.txt") else None, # 得到cookies yt-dlp --cookies-from-browser chrome --cookies cookies.txt
-        # 'cookiesfrombrowser': ('chrome', ), # 从chrome浏览器中获取cookie 
-        # 'cookiesfrombrowser': ('firefox', 'default', None, 'Meta') # 从firefox浏览器中获取cookie
+        'cookiefile' : 'cookies.txt' if os.path.exists("cookies.txt") else None, # Get cookies: yt-dlp --cookies-from-browser chrome --cookies cookies.txt
+        # 'cookiesfrombrowser': ('chrome', ), # Get cookies from chrome browser
+        # 'cookiesfrombrowser': ('firefox', 'default', None, 'Meta') # Get cookies from firefox browser
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     # Playlist
     # Bilibili 【TED演讲/Ed合集】精选50篇-对应文稿第1-50篇【无字幕】
     # url = 'https://www.bilibili.com/video/BV1YQ4y1371P/'
-    url = 'https://www.bilibili.com/video/BV1kr421M7vz/' # (英文无字幕) 阿里这小子在水城威尼斯发来问候
+    url = 'https://www.bilibili.com/video/BV1kr421M7vz/' # (English No Subtitles) Greetings from Ali in the water city of Venice
     folder_path = 'videos'
     os.makedirs(folder_path, exist_ok=True)
     download_from_url(url, folder_path)

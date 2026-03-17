@@ -37,9 +37,11 @@ def load_model(model_path="models/TTS/CosyVoice-300M", device='auto'):
 #  <|zh|><|en|><|jp|><|yue|><|ko|> for Chinese/English/Japanese/Cantonese/Korean
 language_map = {
     '中文': 'zh',
+    'Chinese': 'zh',
     'English': 'en',
     'Japanese': 'jp',
     '粤语': 'yue',
+    'Cantonese': 'yue',
     'Korean': 'ko'
 }
 
@@ -47,7 +49,7 @@ def tts(text, output_path, speaker_wav, model_name="models/TTS/CosyVoice-300M", 
     global model
     
     if os.path.exists(output_path):
-        logger.info(f'TTS {text} 已存在')
+        logger.info(f'TTS {text} already exists')
         return
     
     if model is None:
@@ -62,7 +64,7 @@ def tts(text, output_path, speaker_wav, model_name="models/TTS/CosyVoice-300M", 
             logger.info(f'TTS {text}')
             break
         except Exception as e:
-            logger.warning(f'TTS {text} 失败')
+            logger.warning(f'TTS {text} failed')
             logger.warning(e)
 
 
@@ -70,6 +72,6 @@ if __name__ == '__main__':
     speaker_wav = r'videos/村长台钓加拿大/20240805 英文无字幕 阿里这小子在水城威尼斯发来问候/audio_vocals.wav'
     os.makedirs('playground', exist_ok=True)
     while True:
-        text = input('请输入：')
-        tts(text, f'playground/{text}.wav', speaker_wav = speaker_wav, target_langugae = "粤语")
+        text = input('Please enter: ')
+        tts(text, f'playground/{text}.wav', speaker_wav = speaker_wav, target_langugae = "Cantonese")
         
