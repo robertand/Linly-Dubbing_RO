@@ -117,11 +117,11 @@ def generate_wavs(method, folder, target_language='Chinese', voice = 'zh-CN-Xiao
     len_instruments_wav = len(instruments_wav)
     
     if len_full_wav > len_instruments_wav:
-        # 如果 full_wav 更长，将 instruments_wav 延伸到相同长度
+        # If full_wav is longer, extend instruments_wav to the same length
         instruments_wav = np.pad(
             instruments_wav, (0, len_full_wav - len_instruments_wav), mode='constant')
     elif len_instruments_wav > len_full_wav:
-        # 如果 instruments_wav 更长，将 full_wav 延伸到相同长度
+        # If instruments_wav is longer, extend full_wav to the same length
         full_wav = np.pad(
             full_wav, (0, len_instruments_wav - len_full_wav), mode='constant')
     combined_wav = full_wav + instruments_wav

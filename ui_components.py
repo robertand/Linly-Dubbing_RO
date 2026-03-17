@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QSlider, QRadioButton, QLineEdit, QPushButton,
                                QFileDialog, QGroupBox)
 from PySide6.QtCore import Qt, QUrl
-# 正确导入QVideoWidget
+# Correctly import QVideoWidget
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 
@@ -153,18 +153,18 @@ class VideoPlayer(QWidget):
         self.label = QLabel(label)
         self.layout.addWidget(self.label)
 
-        # 创建视频部件
+        # Create video widget
         self.video_widget = QVideoWidget()
-        self.video_widget.setMinimumHeight(200)  # 设置最小高度确保可见
+        self.video_widget.setMinimumHeight(200)  # Set minimum height to ensure visibility
 
-        # 创建媒体播放器并配置音频输出
+        # Create media player and configure audio output
         self.media_player = QMediaPlayer()
         self.media_player.setVideoOutput(self.video_widget)
 
-        # 使用音频输出对象控制音量
+        # Use audio output object to control volume
         self.audio_output = QAudioOutput()
-        self.media_player.setAudioOutput(self.audio_output)  # 设置音频输出
-        self.audio_output.setVolume(0.7)  # 设置默认音量为70%
+        self.media_player.setAudioOutput(self.audio_output)  # Set audio output
+        self.audio_output.setVolume(0.7)  # Set default volume to 70%
 
         # Add volume control slider
         self.volume_slider = QSlider(Qt.Horizontal)

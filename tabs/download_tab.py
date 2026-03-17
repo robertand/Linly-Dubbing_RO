@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit,
 
 from ui_components import CustomSlider, RadioButtonGroup, VideoPlayer
 
-# 尝试导入实际的功能模块
+# Try to import actual function modules
 try:
     from tools.step000_video_downloader import download_from_url
 except ImportError:
@@ -16,58 +16,58 @@ class DownloadTab(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
 
-        # 视频URL
+        # Video URL
         self.video_url = QLineEdit()
-        self.video_url.setPlaceholderText("请输入Youtube或Bilibili的视频、播放列表或频道的URL")
+        self.video_url.setPlaceholderText("Please enter the URL of a Youtube or Bilibili video, playlist, or channel")
         self.video_url.setText("https://www.bilibili.com/video/BV1kr421M7vz/")
-        self.layout.addWidget(QLabel("视频URL"))
+        self.layout.addWidget(QLabel("Video URL"))
         self.layout.addWidget(self.video_url)
 
-        # 视频输出文件夹
+        # Video Output Folder
         self.video_folder = QLineEdit("videos")
-        self.layout.addWidget(QLabel("视频输出文件夹"))
+        self.layout.addWidget(QLabel("Video Output Folder"))
         self.layout.addWidget(self.video_folder)
 
-        # 分辨率
+        # Resolution
         self.resolution = RadioButtonGroup(
             ['4320p', '2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p'],
-            "分辨率",
+            "Resolution",
             '1080p'
         )
         self.layout.addWidget(self.resolution)
 
-        # 下载视频数量
-        self.video_count = CustomSlider(1, 100, 1, "下载视频数量", 5)
+        # Number of Videos to Download
+        self.video_count = CustomSlider(1, 100, 1, "Number of Videos to Download", 5)
         self.layout.addWidget(self.video_count)
 
-        # 执行按钮
-        self.run_button = QPushButton("开始下载")
+        # Run Button
+        self.run_button = QPushButton("Start Download")
         self.run_button.clicked.connect(self.run_download)
         self.layout.addWidget(self.run_button)
 
-        # 状态显示
-        self.status_label = QLabel("准备就绪")
-        self.layout.addWidget(QLabel("下载状态:"))
+        # Status Display
+        self.status_label = QLabel("Ready")
+        self.layout.addWidget(QLabel("Download Status:"))
         self.layout.addWidget(self.status_label)
 
-        # 视频播放器
-        self.video_player = VideoPlayer("示例视频")
+        # Video Player
+        self.video_player = VideoPlayer("Sample Video")
         self.layout.addWidget(self.video_player)
 
-        # 下载信息
-        self.download_info = QLabel("下载信息将显示在这里")
-        self.layout.addWidget(QLabel("下载信息:"))
+        # Download Information
+        self.download_info = QLabel("Download information will be displayed here")
+        self.layout.addWidget(QLabel("Download Information:"))
         self.layout.addWidget(self.download_info)
 
         self.setLayout(self.layout)
 
     def run_download(self):
-        # 这里应该调用原始的download_from_url函数
-        # 临时实现，实际应用中需要替换为真实的调用
-        self.status_label.setText("下载中...")
-        QMessageBox.information(self, "功能提示", "下载功能正在实现中...")
+        # This should call the original download_from_url function
+        # Temporary implementation, needs to be replaced with real call in actual application
+        self.status_label.setText("Downloading...")
+        QMessageBox.information(self, "Feature Hint", "Download feature is being implemented...")
 
-        # 实际应用中解除以下注释
+        # Uncomment the following in actual application
 
         try:
             status, video_path, info = download_from_url(
@@ -81,4 +81,4 @@ class DownloadTab(QWidget):
                 self.video_player.set_video(video_path)
             self.download_info.setText(str(info))
         except Exception as e:
-            self.status_label.setText(f"下载失败: {str(e)}")
+            self.status_label.setText(f"Download Failed: {str(e)}")

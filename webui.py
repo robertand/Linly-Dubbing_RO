@@ -15,6 +15,7 @@ full_auto_interface = gr.Interface(
         gr.Textbox(label='Video Output Folder', value='videos'),
         gr.Textbox(label='Video URL', placeholder='Please enter the URL of a Youtube or Bilibili video, playlist, or channel',
                    value='https://www.bilibili.com/video/BV1kr421M7vz/'),
+        gr.Video(label='Upload Local Video (Optional)'),
         gr.Slider(minimum=1, maximum=100, step=1, label='Number of Videos to Download', value=5),
         gr.Radio(['4320p', '2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p'], label='Resolution', value='1080p'),
 
@@ -39,7 +40,7 @@ full_auto_interface = gr.Interface(
         gr.Checkbox(label='Add Subtitles', value=True),
         gr.Slider(minimum=0.5, maximum=2, step=0.05, label='Speed Factor', value=1.00),
         gr.Slider(minimum=1, maximum=60, step=1, label='Frame Rate', value=30),
-        gr.Audio(label='Background Music', sources=['upload']),
+        gr.Audio(label='Background Music', sources=['upload'], type='filepath'),
         gr.Slider(minimum=0, maximum=1, step=0.05, label='BGM Volume', value=0.5),
         gr.Slider(minimum=0, maximum=1, step=0.05, label='Video Volume', value=1.0),
         gr.Radio(['4320p', '2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p'], label='Resolution', value='1080p'),

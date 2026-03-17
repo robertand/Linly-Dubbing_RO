@@ -17,7 +17,7 @@ from .step043_tts_cosyvoice import init_cosyvoice
 from .step050_synthesize_video import synthesize_all_video_under_folder
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# 跟踪模型初始化状态
+# Track model initialization status
 models_initialized = {
     'demucs': False,
     'xtts': False,
@@ -255,7 +255,7 @@ def process_video(info, root_folder, resolution,
     return False, None, f"Reached maximum retry count: {max_retries}"
 
 
-def do_everything(root_folder, url, num_videos=5, resolution='1080p',
+def do_everything(root_folder, url, local_video=None, num_videos=5, resolution='1080p',
                   demucs_model='htdemucs_ft', device='auto', shifts=5,
                   asr_method='WhisperX', whisper_model='large', batch_size=32, diarization=False,
                   whisper_min_speakers=None, whisper_max_speakers=None,
@@ -277,7 +277,11 @@ def do_everything(root_folder, url, num_videos=5, resolution='1080p',
 
         # Log task start and all parameters
         logger.info("-" * 50)
-        logger.info(f"Starting task: {url}")
+        if local_video:
+            logger.info(f"Starting task with local video: {local_video}")
+            url = local_video
+        else:
+            logger.info(f"Starting task with URL: {url}")
         logger.info(f"Params: Output Folder={root_folder}, Video Count={num_videos}, Resolution={resolution}")
         logger.info(f"Vocal Separation: Model={demucs_model}, Device={device}, Shifts={shifts}")
         logger.info(f"Speech Recognition: Method={asr_method}, Model={whisper_model}, Batch Size={batch_size}")
@@ -286,7 +290,19 @@ def do_everything(root_folder, url, num_videos=5, resolution='1080p',
         logger.info(f"Video Synthesis: Subtitles={subtitles}, Speed={speed_up}, FPS={fps}, Resolution={target_resolution}")
         logger.info("-" * 50)
 
-        url = url.replace(' ', '').replace('，', '\n').replace(',', '\n')
+        # Differentiate between local file and URL
+        is_local_video = False
+        if local_video:
+            url = local_video
+            is_local_video = True
+            logger.info(f"Using uploaded local video: {url}")
+        elif os.path.exists(url) and any(url.lower().endswith(ext) for ext in ['.mp4', '.avi', '.mkv', '.mov', '.flv']):
+            is_local_video = True
+            logger.info(f"Using local video path: {url}")
+
+        if not is_local_video:
+            url = url.replace(' ', '').replace('，', '\n').replace(',', '\n')
+
         urls = [_ for _ in url.split('\n') if _]
 
         # Initialize models
@@ -300,11 +316,12 @@ def do_everything(root_folder, url, num_videos=5, resolution='1080p',
             return f"Failed to initialize models: {str(e)}", None
 
         out_video = None
-        if url.endswith('.mp4'):
+        if is_local_video:
             try:
                 import shutil
-                # Get original video filename (without path)
-                original_file_name = os.path.basename(url)
+                # Use the path directly
+                source_path = url
+                original_file_name = os.path.basename(source_path)
 
                 # Remove extension to generate folder name
                 new_folder_name = os.path.splitext(original_file_name)[0]
@@ -315,16 +332,12 @@ def do_everything(root_folder, url, num_videos=5, resolution='1080p',
                 # Create folder under root_folder
                 os.makedirs(new_folder_path, exist_ok=True)
 
-                # Build full path of original file
-                original_file_path = os.path.join(root_folder, original_file_name)
-
                 # Build full path of new location
                 new_file_path = os.path.join(new_folder_path, "download.mp4")
 
                 # Copy video file to new folder and rename
-                shutil.copy(original_file_path, new_file_path)
-                # Create folder under root_folder
-                os.makedirs(new_folder_path, exist_ok=True)
+                logger.info(f"Copying {source_path} to {new_file_path}")
+                shutil.copy(source_path, new_file_path)
 
                 success, output_video, error_msg = process_video(
                     new_file_path, root_folder, resolution,
