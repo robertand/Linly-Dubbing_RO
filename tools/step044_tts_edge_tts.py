@@ -11,7 +11,7 @@ model = None
 
 
 
-#  <|zh|><|en|><|jp|><|yue|><|ko|> for Chinese/English/Japanese/Cantonese/Korean
+# Language mapping for EdgeTTS
 language_map = {
     '中文': 'zh-CN-XiaoxiaoNeural',
     'Chinese': 'zh-CN-XiaoxiaoNeural',
@@ -25,7 +25,7 @@ language_map = {
     'Romanian': 'ro-RO-AlinaNeural'
 }
 
-def tts(text, output_path, target_language='中文', voice = 'zh-CN-XiaoxiaoNeural'):
+def tts(text, output_path, target_language='Chinese', voice = 'zh-CN-XiaoxiaoNeural'):
     if os.path.exists(output_path):
         logger.info(f'TTS {text} already exists')
         return

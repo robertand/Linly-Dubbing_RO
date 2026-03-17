@@ -126,12 +126,12 @@ if __name__ == '__main__':
     # Example usage
     # Youtube Title: How to Install and Use yt-dlp [2024] [Quick and Easy!] [4 Minute Tutorial] [Windows 11]
     url = 'https://www.youtube.com/watch?v=5aYwU4nj5QA'
-    # Bilibili Title 高清无字幕 | 英语听力 | Taylor Swift纽约大学2022届毕业典礼演讲 | Commencement Speech at NYU
+    # Bilibili Title HD No Subtitles | English Listening | Taylor Swift NYU 2022 Commencement Speech
     url = 'https://www.bilibili.com/video/BV1KZ4y1h7ke/'
-    # Bilbili Title 奥巴马开学演讲，纯英文字幕
+    # Bilibili Title Obama Commencement Speech, English Subtitles
     url = 'https://www.bilibili.com/video/BV1Tt411P72Q/'
     # Playlist
-    # Bilibili 【TED演讲/Ed合集】精选50篇-对应文稿第1-50篇【无字幕】
+    # Bilibili [TED Speech/Ed Collection] Selected 50 episodes - Transcripts 1-50 [No Subtitles]
     # url = 'https://www.bilibili.com/video/BV1YQ4y1371P/'
     url = 'https://www.bilibili.com/video/BV1kr421M7vz/' # (English No Subtitles) Greetings from Ali in the water city of Venice
     folder_path = 'videos'

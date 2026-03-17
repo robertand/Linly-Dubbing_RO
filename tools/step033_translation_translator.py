@@ -24,7 +24,10 @@ def translator_response(messages, to_language = 'zh-CN', translator_server = 'bi
     return translation
 
 if __name__ == '__main__':
+    # Test Bing translation to Chinese
     response = translator_response('Hello, how are you?', 'Chinese', 'bing')
-    print(response)
+    print(f"Bing (to Chinese): {response}")
+
+    # Test Google translation to English
     response = translator_response('Hello, how are things lately? ', 'en', 'google')
-    print(response)
+    print(f"Google (to English): {response}")

@@ -384,7 +384,7 @@ def synthesize_all_video_under_folder(folder, subtitles=True, speed_up=1.00, fps
     return f'Synthesized all videos under {folder}', output_video
 
 if __name__ == '__main__':
-    folder = r"videos/村长台钓加拿大/20240805 英文无字幕 阿里这小子在水城威尼斯发来问候"
+    folder = r"videos/Example_Folder/20240805 English No Subtitles Greetings from Ali"
     synthesize_all_video_under_folder(folder, 
                                       subtitles=True, 
                                       background_music = 'examples/bk_music.mp3', 
