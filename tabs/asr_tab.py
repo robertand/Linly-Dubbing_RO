@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit,
 
 from ui_components import CustomSlider, RadioButtonGroup
 
-# 尝试导入实际的功能模块
+# Try to import actual function modules
 try:
     from tools.step020_asr import transcribe_all_audio_under_folder
 except ImportError:
@@ -16,75 +16,75 @@ class ASRTab(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
 
-        # 创建一个滚动区域
+        # Create a scroll area
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_widget = QWidget()
         self.scroll_layout = QVBoxLayout(self.scroll_widget)
 
-        # 视频文件夹
+        # Video Folder
         self.video_folder = QLineEdit("videos")
-        self.scroll_layout.addWidget(QLabel("视频文件夹"))
+        self.scroll_layout.addWidget(QLabel("Video Folder"))
         self.scroll_layout.addWidget(self.video_folder)
 
-        # ASR模型选择
+        # ASR Model Selection
         self.asr_model = QComboBox()
         self.asr_model.addItems(['WhisperX', 'FunASR'])
-        self.scroll_layout.addWidget(QLabel("ASR模型选择"))
+        self.scroll_layout.addWidget(QLabel("ASR Model Selection"))
         self.scroll_layout.addWidget(self.asr_model)
 
-        # WhisperX模型大小
-        self.whisperx_size = RadioButtonGroup(['large', 'medium', 'small', 'base', 'tiny'], "WhisperX模型大小", 'large')
+        # WhisperX Model Size
+        self.whisperx_size = RadioButtonGroup(['large', 'medium', 'small', 'base', 'tiny'], "WhisperX Model Size", 'large')
         self.scroll_layout.addWidget(self.whisperx_size)
 
-        # 计算设备
-        self.device = RadioButtonGroup(['auto', 'cuda', 'cpu'], "计算设备", 'auto')
+        # Compute Device
+        self.device = RadioButtonGroup(['auto', 'cuda', 'cpu'], "Compute Device", 'auto')
         self.scroll_layout.addWidget(self.device)
 
-        # 批处理大小
-        self.batch_size = CustomSlider(1, 128, 1, "批处理大小 Batch Size", 32)
+        # Batch Size
+        self.batch_size = CustomSlider(1, 128, 1, "Batch Size", 32)
         self.scroll_layout.addWidget(self.batch_size)
 
-        # 分离多个说话人
-        self.separate_speakers = QCheckBox("分离多个说话人")
+        # Separate Multiple Speakers
+        self.separate_speakers = QCheckBox("Separate Multiple Speakers")
         self.separate_speakers.setChecked(True)
         self.scroll_layout.addWidget(self.separate_speakers)
 
-        # 最小说话人数
-        self.min_speakers = RadioButtonGroup([None, 1, 2, 3, 4, 5, 6, 7, 8, 9], "最小说话人数", None)
+        # Min Speakers
+        self.min_speakers = RadioButtonGroup([None, 1, 2, 3, 4, 5, 6, 7, 8, 9], "Min Speakers", None)
         self.scroll_layout.addWidget(self.min_speakers)
 
-        # 最大说话人数
-        self.max_speakers = RadioButtonGroup([None, 1, 2, 3, 4, 5, 6, 7, 8, 9], "最大说话人数", None)
+        # Max Speakers
+        self.max_speakers = RadioButtonGroup([None, 1, 2, 3, 4, 5, 6, 7, 8, 9], "Max Speakers", None)
         self.scroll_layout.addWidget(self.max_speakers)
 
-        # 执行按钮
-        self.run_button = QPushButton("开始识别")
+        # Run Button
+        self.run_button = QPushButton("Start Recognition")
         self.run_button.clicked.connect(self.run_asr)
         self.scroll_layout.addWidget(self.run_button)
 
-        # 状态显示
-        self.status_label = QLabel("准备就绪")
-        self.scroll_layout.addWidget(QLabel("语音识别状态:"))
+        # Status Display
+        self.status_label = QLabel("Ready")
+        self.scroll_layout.addWidget(QLabel("ASR Status:"))
         self.scroll_layout.addWidget(self.status_label)
 
-        # 识别结果详情
-        self.result_detail = QLabel("识别结果将显示在这里")
-        self.scroll_layout.addWidget(QLabel("识别结果详情:"))
+        # Recognition Details
+        self.result_detail = QLabel("Recognition results will be displayed here")
+        self.scroll_layout.addWidget(QLabel("Recognition Details:"))
         self.scroll_layout.addWidget(self.result_detail)
 
-        # 设置滚动区域
+        # Set scroll area
         self.scroll_area.setWidget(self.scroll_widget)
         self.layout.addWidget(self.scroll_area)
         self.setLayout(self.layout)
 
     def run_asr(self):
-        # 这里应该调用原始的transcribe_all_audio_under_folder函数
-        # 临时实现，实际应用中需要替换为真实的调用
-        self.status_label.setText("识别中...")
-        QMessageBox.information(self, "功能提示", "AI智能语音识别功能正在实现中...")
+        # This should call the original transcribe_all_audio_under_folder function
+        # Temporary implementation, needs to be replaced with real call in actual application
+        self.status_label.setText("Recognizing...")
+        QMessageBox.information(self, "Feature Hint", "AI speech recognition feature is being implemented...")
 
-        # 实际应用中解除以下注释
+        # Uncomment the following in actual application
 
         try:
             status, result_json = transcribe_all_audio_under_folder(
@@ -100,4 +100,4 @@ class ASRTab(QWidget):
             self.status_label.setText(status)
             self.result_detail.setText(str(result_json))
         except Exception as e:
-            self.status_label.setText(f"识别失败: {str(e)}")
+            self.status_label.setText(f"Recognition Failed: {str(e)}")

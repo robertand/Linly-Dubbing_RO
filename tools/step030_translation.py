@@ -33,22 +33,22 @@ def ensure_transcript_length(transcript, max_length=4000):
     return before[:length] + after[-length:]
 
 def split_text_into_sentences(para):
-    para = re.sub('([。！？\?])([^，。！？\?”’》])', r"\1\n\2", para)  # 单字符断句符
-    para = re.sub('(\.{6})([^，。！？\?”’》])', r"\1\n\2", para)  # 英文省略号
-    para = re.sub('(\…{2})([^，。！？\?”’》])', r"\1\n\2", para)  # 中文省略号
+    para = re.sub('([。！？\?])([^，。！？\?”’》])', r"\1\n\2", para)  # Single character sentence delimiters
+    para = re.sub('(\.{6})([^，。！？\?”’》])', r"\1\n\2", para)  # English ellipsis
+    para = re.sub('(\…{2})([^，。！？\?”’》])', r"\1\n\2", para)  # Chinese ellipsis
     para = re.sub('([。！？\?][”’])([^，。！？\?”’》])', r'\1\n\2', para)
-    # 如果双引号前有终止符，那么双引号才是句子的终点，把分句符\n放到双引号后，注意前面的几句都小心保留了双引号
-    para = para.rstrip()  # 段尾如果有多余的\n就去掉它
-    # 很多规则中会考虑分号;，但是这里我把它忽略不计，破折号、英文双引号等同样忽略，需要的再做些简单调整即可。
+    # If there's a terminator before a closing double quote, the quote is the end of the sentence.
+    para = para.rstrip()  # Remove trailing newlines
+    # Semicolons, dashes, etc., are currently ignored for simplicity.
     return para.split("\n")
 
 def translation_postprocess(result):
     result = re.sub(r'\（[^)]*\）', '', result)
-    result = result.replace('...', '，')
+    result = result.replace('...', ',')
     result = re.sub(r'(?<=\d),(?=\d)', '', result)
-    result = result.replace('²', '的平方').replace(
-        '————', '：').replace('——', '：').replace('°', '度')
-    result = result.replace("AI", '人工智能')
+    result = result.replace('²', ' squared').replace(
+        '————', ':').replace('——', ':').replace('°', ' degrees')
+    result = result.replace("AI", 'Artificial Intelligence')
     result = result.replace('变压器', "Transformer")
     return result
 
@@ -85,7 +85,7 @@ def valid_translation(text, translation):
     elif len(translation) > len(text)*0.75:
         return False, f'The translation is too long. Only translate the following sentence and give me the result.'
     
-    forbidden = ['翻译', '译文', '这句', '\n', '简体中文', '中文', 'translate', 'Translate', 'translation', 'Translation']
+    forbidden = ['翻译', '译文', '这句', '\n', '简体中文', 'Simplified Chinese', '中文', 'Chinese', 'translate', 'Translate', 'translation', 'Translation']
     translation = translation.strip()
     for word in forbidden:
         if word in translation:
@@ -102,22 +102,22 @@ def split_sentences(translation, use_char_based_end=True):
         speaker = item['speaker']
         translation_text = item['translation']
 
-        # 检查翻译文本是否为空
+        # Check if translation text is empty
         if not translation_text or len(translation_text.strip()) == 0:
-            # 如果翻译为空，直接使用原始时间范围并跳过分割
+            # If translation is empty, use original time range and skip splitting
             output_data.append({
                 "start": round(start, 3),
                 "end": round(item['end'], 3),
                 "text": text,
                 "speaker": speaker,
-                "translation": translation_text or "未翻译"  # 如果是空字符串，提供默认值
+                "translation": translation_text or "Untranslated"  # Provide default value if empty
             })
             continue
 
         sentences = split_text_into_sentences(translation_text)
 
         if use_char_based_end:
-            # 避免除以零错误
+            # Avoid division by zero error
             duration_per_char = (item['end'] - item['start']) / max(1, len(translation_text))
         else:
             duration_per_char = 0
@@ -144,13 +144,13 @@ def split_sentences(translation, use_char_based_end=True):
 
     return output_data
 
-def summarize(info, transcript, target_language='简体中文', method = 'LLM'):
-    transcript = ' '.join(line['text'] for line in transcript)
-    transcript = ensure_transcript_length(transcript, max_length=2000)
+def summarize(info, transcript, target_language='English', method = 'LLM'):
+    transcript_text = ' '.join(line['text'] for line in transcript)
+    transcript_text = ensure_transcript_length(transcript_text, max_length=2000)
     info_message = f'Title: "{info["title"]}" Author: "{info["uploader"]}". ' 
     
     if method in ['Google Translate', 'Bing Translate']:
-        full_description = f'{info_message}\n{transcript}\n{info_message}\n'
+        full_description = f'{info_message}\n{transcript_text}\n{info_message}\n'
         translation = translator_response(full_description, target_language)
         return {
                 'title': translator_response(info['title'], target_language),
@@ -159,11 +159,11 @@ def summarize(info, transcript, target_language='简体中文', method = 'LLM'):
                 'language': target_language
             }
 
-    full_description = f'The following is the full content of the video:\n{info_message}\n{transcript}\n{info_message}\nAccording to the above content, detailedly Summarize the video in JSON format:\n```json\n{{"title": "", "summary": ""}}\n```'
+    full_description = f'The following is the full content of the video:\n{info_message}\n{transcript_text}\n{info_message}\nAccording to the above content, detailedly Summarize the video in JSON format:\n```json\n{{"title": "", "summary": ""}}\n```'
     
     messages = [
         {'role': 'system',
-            'content': f'You are a expert in the field of this video. Please detailedly summarize the video in JSON format.\n```json\n{{"title": "the title of the video", "summary", "the summary of the video"}}\n```'},
+            'content': f'You are a expert in the field of this video. Please detailedly summarize the video in JSON format.\n```json\n{{"title": "the title of the video", "summary": "the summary of the video"}}\n```'},
         {'role': 'user', 'content': full_description},
     ]
     retry_message=''
@@ -171,7 +171,7 @@ def summarize(info, transcript, target_language='简体中文', method = 'LLM'):
     for retry in range(9):
         try:
             messages = [
-                {'role': 'system', 'content': f'You are a expert in the field of this video. Please summarize the video in JSON format.\n```json\n{{"title": "the title of the video", "summary", "the summary of the video"}}\n```'},
+                {'role': 'system', 'content': f'You are a expert in the field of this video. Please summarize the video in JSON format.\n```json\n{{"title": "the title of the video", "summary": "the summary of the video"}}\n```'},
                 {'role': 'user', 'content': full_description+retry_message},
             ]
             if method == 'LLM':
@@ -182,15 +182,15 @@ def summarize(info, transcript, target_language='简体中文', method = 'LLM'):
                 system_content = messages[0]['content']
                 user_messages = messages[1:]
                 response = ernie_response(user_messages, system=system_content)
-            elif method == '阿里云-通义千问':
+            elif method == 'Alibaba-Qwen':
                 response = qwen_response(messages)
-            elif method == 'Ollama':  # 添加对Ollama的支持
+            elif method == 'Ollama':  # Add support for Ollama
                 response = ollama_response(messages)
             else:
                 raise Exception('Invalid method')
             summary = response.replace('\n', '')
-            if '视频标题' in summary:
-                raise Exception("包含“视频标题”")
+            if 'Video Title' in summary or '视频标题' in summary:
+                raise Exception("Contains 'Video Title'")
             logger.info(summary)
             summary = re.findall(r'\{.*?\}', summary)[0]
             summary = json.loads(summary)
@@ -208,17 +208,17 @@ def summarize(info, transcript, target_language='简体中文', method = 'LLM'):
         except Exception as e:
             traceback.print_exc()
             retry_message += '\nSummarize the video in JSON format:\n```json\n{"title": "", "summary": ""}\n```'
-            logger.warning(f'总结失败\n{e}')
+            logger.warning(f'Summarization failed\n{e}')
             time.sleep(1)
             
     if not success:
-        raise Exception(f'总结失败')
+        raise Exception(f'Summarization failed')
             
     messages = [
         {'role': 'system',
-            'content': f'You are a native speaker of {target_language}. Please translate the title and summary into {target_language} in JSON format. ```json\n{{"title": "the {target_language} title of the video", "summary", "the {target_language} summary of the video", "tags": [list of tags in {target_language}]}}\n```.'},
+            'content': f'You are a native speaker of {target_language}. Please translate the title and summary into {target_language} in JSON format. ```json\n{{"title": "the {target_language} title of the video", "summary": "the {target_language} summary of the video", "tags": [list of tags in {target_language}]}}\n```.'},
         {'role': 'user',
-            'content': f'The title of the video is "{summary["title"]}". The summary of the video is "{summary["summary"]}". Tags: {info["tags"]}.\nPlease translate the above title and summary and tags into {target_language} in JSON format. ```json\n{{"title": "", "summary", ""， "tags": []}}\n```. Remember to tranlate the title and the summary and tags into {target_language} in JSON.'},
+            'content': f'The title of the video is "{summary["title"]}". The summary of the video is "{summary["summary"]}". Tags: {info["tags"]}.\nPlease translate the above title and summary and tags into {target_language} in JSON format. ```json\n{{"title": "", "summary": ""， "tags": []}}\n```. Remember to translate the title and the summary and tags into {target_language} in JSON.'},
     ]
     while True:
         try: 
@@ -237,20 +237,28 @@ def summarize(info, transcript, target_language='简体中文', method = 'LLM'):
             }
             return result
         except Exception as e:
-            logger.warning(f'总结翻译失败\n{e}')
+            logger.warning(f'Summary translation failed\n{e}')
             time.sleep(1)
 
-def _translate(summary, transcript, target_language='简体中文', method='LLM'):
+def _translate(summary, transcript, target_language='English', method='LLM'):
 
     info = f'This is a video called "{summary["title"]}". {summary["summary"]}.'
     full_translation = []
-    if target_language == '简体中文':
+    if target_language in ['Simplified Chinese', '简体中文']:
         fixed_message = [
-            {'role': 'system', 'content': f'You are an expert in the field of this video.\n{info}\nTranslate the sentence into {target_language}. 下面我让你来充当翻译家，你的目标是把任何语言翻译成{target_language}，请翻译时不要带翻译腔，而是要翻译得自然、流畅和地道，使用优美和高雅的表达方式。请将人工智能的“agent”翻译为“智能体”，强化学习中是`Q-Learning`而不是`Queue Learning`。数学公式写成plain text，不要使用latex。确保翻译正确和简洁。注意信达雅。'},
-            {'role': 'user', 'content': f'使用地道的{target_language}Translate:"Knowledge is power."'},
-            {'role': 'assistant', 'content': '翻译：“知识就是力量。”'},
-            {'role': 'user', 'content': f'使用地道的{target_language}Translate:"To be or not to be, that is the question."'},
-            {'role': 'assistant', 'content': '翻译：“生存还是毁灭，这是一个值得考虑的问题。”'},
+            {'role': 'system', 'content': f'You are an expert in the field of this video.\n{info}\nTranslate the sentence into {target_language}. You are a translator. Your goal is to translate any language into {target_language}. Please do not use translationese, but translate naturally, fluently and authentically, using beautiful and elegant expressions. Please translate "agent" in artificial intelligence as "智能体", and in reinforcement learning it is `Q-Learning` rather than `Queue Learning`. Mathematical formulas are written as plain text, do not use latex. Ensure that the translation is correct and concise.'},
+            {'role': 'user', 'content': f'Translate using authentic {target_language}: "Knowledge is power."'},
+            {'role': 'assistant', 'content': 'Translation: "知识就是力量。"'},
+            {'role': 'user', 'content': f'Translate using authentic {target_language}: "To be or not to be, that is the question."'},
+            {'role': 'assistant', 'content': 'Translation: "生存还是毁灭，这是一个值得考虑的问题。"'},
+        ]
+    elif target_language in ['Romanian', 'Română']:
+        fixed_message = [
+            {'role': 'system', 'content': f'Ești un expert în domeniul acestui videoclip.\n{info}\nTradu propoziția în {target_language}. Ești un traducător. Scopul tău este să traduci orice limbă în {target_language}. Te rugăm să nu folosești limbaj de traducere automată, ci să traduci natural, fluent și autentic, folosind expresii frumoase și elegante. Asigură-te că traducerea este corectă și concisă.'},
+            {'role': 'user', 'content': f'Tradu folosind {target_language} autentică: "Knowledge is power."'},
+            {'role': 'assistant', 'content': 'Traducere: "Cunoașterea înseamnă putere."'},
+            {'role': 'user', 'content': f'Tradu folosind {target_language} autentică: "To be or not to be, that is the question."'},
+            {'role': 'assistant', 'content': 'Traducere: "A fi sau a nu fi, aceasta este întrebarea."'},
         ]
     else:
         # For other languages, we keep the template general
@@ -287,15 +295,15 @@ def _translate(summary, transcript, target_language='简体中文', method='LLM'
                         system_content = messages[0]['content']
                         user_messages = messages[1:]
                         response = ernie_response(user_messages, system=system_content)
-                    elif method == '阿里云-通义千问':
+                    elif method == 'Alibaba-Qwen':
                         response = qwen_response(messages)
-                    elif method == 'Ollama':  # 添加对Ollama的支持
+                    elif method == 'Ollama':  # Add support for Ollama
                         response = ollama_response(messages)
                     else:
                         raise Exception('Invalid method')
                     translation = response.replace('\n', '')
-                    logger.info(f'原文：{text}')
-                    logger.info(f'译文：{translation}')
+                    logger.info(f'Original Text: {text}')
+                    logger.info(f'Translated Text: {translation}')
                     success, translation = valid_translation(text, translation)
                     if not success:
                         retry_message += translation
@@ -303,22 +311,22 @@ def _translate(summary, transcript, target_language='简体中文', method='LLM'
                     break
                 except Exception as e:
                     logger.error(e)
-                    logger.warning('翻译失败')
+                    logger.warning('Translation failed')
                     time.sleep(1)
         full_translation.append(translation)
-        history.append({'role': 'user', 'content': f'Translate:"{text}"'})
-        history.append({'role': 'assistant', 'content': f'翻译：“{translation}”'})
+        history.append({'role': 'user', 'content': f'Translate: "{text}"'})
+        history.append({'role': 'assistant', 'content': f'Translation: "{translation}"'})
         time.sleep(0.1)
         
     return full_translation
 
-def translate(method, folder, target_language='简体中文'):
+def translate(method, folder, target_language='English'):
     if os.path.exists(os.path.join(folder, 'translation.json')):
         logger.info(f'Translation already exists in {folder}')
         return True
     
     info_path = os.path.join(folder, 'download.info.json')
-    # 不一定要download.info.json
+    # download.info.json is optional
     if os.path.exists(info_path):
         with open(info_path, 'r', encoding='utf-8') as f:
             info = json.load(f)
@@ -367,6 +375,6 @@ def translate_all_transcript_under_folder(folder, method, target_language):
     return f'Translated all videos under {folder}',summary_json , translate_json
 
 if __name__ == '__main__':
-    # translate_all_transcript_under_folder(r'videos', 'LLM' , '简体中文')
-    # translate_all_transcript_under_folder(r'videos', 'OpenAI' , '简体中文')
-    translate_all_transcript_under_folder(r'videos', 'ernie' , '简体中文')
+    # translate_all_transcript_under_folder(r'videos', 'LLM' , 'Simplified Chinese')
+    # translate_all_transcript_under_folder(r'videos', 'OpenAI' , 'Simplified Chinese')
+    translate_all_transcript_under_folder(r'videos', 'ernie' , 'Simplified Chinese')

@@ -2,7 +2,7 @@ import os
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QLineEdit,
                                QComboBox, QPushButton, QMessageBox, QScrollArea)
 
-# 尝试导入实际的功能模块
+# Try to import actual function modules
 try:
     from tools.step030_translation import translate_all_transcript_under_folder
 except ImportError:
@@ -14,44 +14,44 @@ class TranslationTab(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
 
-        # 视频文件夹
+        # Video Folder
         self.video_folder = QLineEdit("videos")
-        self.layout.addWidget(QLabel("视频文件夹"))
+        self.layout.addWidget(QLabel("Video Folder"))
         self.layout.addWidget(self.video_folder)
 
-        # 翻译方式
+        # Translation Method
         self.translation_method = QComboBox()
         self.translation_method.addItems(['OpenAI', 'LLM', 'Google Translate', 'Bing Translate', 'Ernie'])
         self.translation_method.setCurrentText('LLM')
-        self.layout.addWidget(QLabel("翻译方式"))
+        self.layout.addWidget(QLabel("Translation Method"))
         self.layout.addWidget(self.translation_method)
 
-        # 目标语言
+        # Target Language
         self.target_language = QComboBox()
-        self.target_language.addItems(['简体中文', '繁体中文', 'English', 'Cantonese', 'Japanese', 'Korean'])
-        self.layout.addWidget(QLabel("目标语言"))
+        self.target_language.addItems(['Simplified Chinese', 'Traditional Chinese', 'English', 'Cantonese', 'Japanese', 'Korean', 'Romanian'])
+        self.layout.addWidget(QLabel("Target Language"))
         self.layout.addWidget(self.target_language)
 
-        # 执行按钮
-        self.run_button = QPushButton("开始翻译")
+        # Run Button
+        self.run_button = QPushButton("Start Translation")
         self.run_button.clicked.connect(self.run_translation)
         self.layout.addWidget(self.run_button)
 
-        # 状态显示
-        self.status_label = QLabel("准备就绪")
-        self.layout.addWidget(QLabel("翻译状态:"))
+        # Status Display
+        self.status_label = QLabel("Ready")
+        self.layout.addWidget(QLabel("Translation Status:"))
         self.layout.addWidget(self.status_label)
 
-        # 总结结果
-        self.summary_label = QLabel("总结结果将显示在这里")
-        self.layout.addWidget(QLabel("总结结果:"))
+        # Summary Result
+        self.summary_label = QLabel("Summary results will be displayed here")
+        self.layout.addWidget(QLabel("Summary Result:"))
         self.layout.addWidget(self.summary_label)
 
-        # 翻译结果
-        self.translation_result = QLabel("翻译结果将显示在这里")
-        self.layout.addWidget(QLabel("翻译结果:"))
+        # Translation Result
+        self.translation_result = QLabel("Translation results will be displayed here")
+        self.layout.addWidget(QLabel("Translation Result:"))
 
-        # 使用滚动区域显示详细结果
+        # Use scroll area to display detailed results
         result_scroll = QScrollArea()
         result_scroll.setWidgetResizable(True)
         result_scroll.setWidget(self.translation_result)
@@ -60,12 +60,12 @@ class TranslationTab(QWidget):
         self.setLayout(self.layout)
 
     def run_translation(self):
-        # 这里应该调用原始的translate_all_transcript_under_folder函数
-        # 临时实现，实际应用中需要替换为真实的调用
-        self.status_label.setText("翻译中...")
-        QMessageBox.information(self, "功能提示", "字幕翻译功能正在实现中...")
+        # This should call the original translate_all_transcript_under_folder function
+        # Temporary implementation, needs to be replaced with real call in actual application
+        self.status_label.setText("Translating...")
+        QMessageBox.information(self, "Feature Hint", "Subtitle translation feature is being implemented...")
 
-        # 实际应用中解除以下注释
+        # Uncomment the following in actual application
 
         try:
             status, summary, translation = translate_all_transcript_under_folder(
@@ -77,4 +77,4 @@ class TranslationTab(QWidget):
             self.summary_label.setText(str(summary))
             self.translation_result.setText(str(translation))
         except Exception as e:
-            self.status_label.setText(f"翻译失败: {str(e)}")
+            self.status_label.setText(f"Translation Failed: {str(e)}")

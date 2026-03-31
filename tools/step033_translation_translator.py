@@ -7,10 +7,12 @@ from loguru import logger
 load_dotenv()
 
 def translator_response(messages, to_language = 'zh-CN', translator_server = 'bing'):
-    if '中文' in to_language:
+    if '中文' in to_language or 'Chinese' in to_language:
         to_language = 'zh-CN'
     elif 'English' in to_language:
         to_language = 'en'
+    elif 'Romanian' in to_language:
+        to_language = 'ro'
     translation = ''
     for retry in range(3):
         try:
@@ -22,7 +24,10 @@ def translator_response(messages, to_language = 'zh-CN', translator_server = 'bi
     return translation
 
 if __name__ == '__main__':
-    response = translator_response('Hello, how are you?', '中文', 'bing')
-    print(response)
-    response = translator_response('你好，最近怎么样？ ', 'en', 'google')
-    print(response)
+    # Test Bing translation to Chinese
+    response = translator_response('Hello, how are you?', 'Chinese', 'bing')
+    print(f"Bing (to Chinese): {response}")
+
+    # Test Google translation to English
+    response = translator_response('Hello, how are things lately? ', 'en', 'google')
+    print(f"Google (to English): {response}")

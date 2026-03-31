@@ -2,12 +2,36 @@ import json
 import time
 import librosa
 import numpy as np
-import whisperx
 import os
+import sys
+
+# Prioritize submodule whisperx
+submodule_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'submodules/whisperX')
+if os.path.exists(submodule_path) and submodule_path not in sys.path:
+    sys.path.insert(0, submodule_path)
+
+import whisperx
 from loguru import logger
 import torch
 from dotenv import load_dotenv
 load_dotenv()
+
+# Monkeypatch for weights_only error in older torch versions
+try:
+    import torch
+    try:
+        import lightning.pytorch.utilities.migration as lightning_migration
+    except ImportError:
+        import pytorch_lightning.utilities.migration as lightning_migration
+
+    original_pl_load = lightning_migration.pl_load
+    def patched_pl_load(*args, **kwargs):
+        if 'weights_only' in kwargs and torch.__version__ < '2.0.0':
+            kwargs.pop('weights_only')
+        return original_pl_load(*args, **kwargs)
+    lightning_migration.pl_load = patched_pl_load
+except Exception:
+    pass
 
 whisper_model = None
 diarize_model = None
@@ -63,7 +87,15 @@ def load_diarize_model(device='auto'):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
     t_start = time.time()
     try:
-        diarize_model = whisperx.DiarizationPipeline(use_auth_token=os.getenv('HF_TOKEN'), device=device)
+        from whisperx.diarize import DiarizationPipeline
+        import inspect
+        params = inspect.signature(DiarizationPipeline.__init__).parameters
+        if 'use_auth_token' in params:
+            diarize_model = DiarizationPipeline(use_auth_token=os.getenv('HF_TOKEN'), device=device)
+        elif 'token' in params:
+            diarize_model = DiarizationPipeline(token=os.getenv('HF_TOKEN'), device=device)
+        else:
+            diarize_model = DiarizationPipeline(device=device)
         t_end = time.time()
         logger.info(f'Loaded diarization model in {t_end - t_start:.2f}s')
     except Exception as e:

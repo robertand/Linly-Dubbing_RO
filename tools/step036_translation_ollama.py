@@ -10,14 +10,14 @@ load_dotenv()
 
 def ollama_response(messages, model_name=None):
     """
-    使用Ollama API进行翻译处理
+    Process translation using Ollama API
 
-    参数:
-        messages: 与OpenAI格式兼容的消息列表
-        model_name: Ollama模型名称，如果为None则从环境变量获取
+    Args:
+        messages: List of messages compatible with OpenAI format
+        model_name: Ollama model name, if None, get from environment variables
 
-    返回:
-        翻译结果文本
+    Returns:
+        Translated text result
     """
     model_name = os.getenv('OLLAMA_MODEL', 'qwen2.5:14b')
 
@@ -33,31 +33,31 @@ def ollama_response(messages, model_name=None):
     }
 
     try:
-        logger.info(f"正在使用Ollama模型 {model_name} 进行翻译...")
+        logger.info(f"Translating using Ollama model {model_name}...")
         response = requests.post(url, json=payload, timeout=120)
 
         if response.status_code == 200:
             result = response.json()
             return result.get('message', {}).get('content', '')
         else:
-            logger.error(f"请求Ollama API失败，状态码：{response.status_code}")
-            logger.error(f"错误详情：{response.text}")
-            raise Exception(f"请求Ollama API失败，状态码：{response.status_code}")
+            logger.error(f"Ollama API request failed, status code: {response.status_code}")
+            logger.error(f"Error details: {response.text}")
+            raise Exception(f"Ollama API request failed, status code: {response.status_code}")
     except Exception as e:
-        logger.error(f"与Ollama通信过程中发生错误: {str(e)}")
+        logger.error(f"Error communicating with Ollama: {str(e)}")
         raise
 
 
 def ollama_stream_response(messages, model_name=None):
     """
-    使用Ollama API进行流式翻译处理（适用于较长文本）
+    Process streaming translation using Ollama API (suitable for long texts)
 
-    参数:
-        messages: 与OpenAI格式兼容的消息列表
-        model_name: Ollama模型名称，如果为None则从环境变量获取
+    Args:
+        messages: List of messages compatible with OpenAI format
+        model_name: Ollama model name, if None, get from environment variables
 
-    返回:
-        完整的翻译结果文本
+    Returns:
+        Full translated text result
     """
     if model_name is None:
         model_name = os.getenv('OLLAMA_MODEL', 'qwen2.5:14b')
@@ -74,11 +74,11 @@ def ollama_stream_response(messages, model_name=None):
     }
 
     try:
-        logger.info(f"正在使用Ollama模型 {model_name} 进行流式翻译...")
+        logger.info(f"Streaming translation using Ollama model {model_name}...")
         response = requests.post(url, json=payload, timeout=300, stream=True)
 
         if response.status_code == 200:
-            # 收集流式响应中的所有结果
+            # Collect all results from the streaming response
             full_response = ""
             for line in response.iter_lines():
                 if line:
@@ -89,23 +89,23 @@ def ollama_stream_response(messages, model_name=None):
 
             return full_response
         else:
-            logger.error(f"请求Ollama流式API失败，状态码：{response.status_code}")
-            logger.error(f"错误详情：{response.text}")
-            raise Exception(f"请求Ollama流式API失败，状态码：{response.status_code}")
+            logger.error(f"Ollama streaming API request failed, status code: {response.status_code}")
+            logger.error(f"Error details: {response.text}")
+            raise Exception(f"Ollama streaming API request failed, status code: {response.status_code}")
     except Exception as e:
-        logger.error(f"与Ollama流式通信过程中发生错误: {str(e)}")
+        logger.error(f"Error during Ollama streaming communication: {str(e)}")
         raise
 
 
 if __name__ == '__main__':
-    # 测试基本翻译功能
-    test_message = [{"role": "user", "content": "你好，介绍一下你自己"}]
+    # Test basic translation function
+    test_message = [{"role": "user", "content": "Hello, please introduce yourself"}]
     response = ollama_response(test_message)
-    print(f"基本响应:\n{response}\n")
+    print(f"Basic response:\n{response}\n")
 
-    # 测试翻译功能
+    # Test translation function
     translate_message = [
-        {"role": "system", "content": "你是一个专业的翻译员，你需要将英语文本翻译成流畅自然的中文。"},
+        {"role": "system", "content": "You are a professional translator. You need to translate English text into fluent and natural Chinese."},
         {"role": "user",
          "content": "Translate this sentence to Chinese: 'The quick brown fox jumps over the lazy dog.'"}
     ]

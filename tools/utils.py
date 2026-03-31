@@ -2,6 +2,20 @@ import re
 import string
 import numpy as np
 from scipy.io import wavfile
+from loguru import logger
+
+# Check numpy version to avoid conflicts with transformers and whisperx
+def check_numpy_version():
+    from packaging import version
+    if version.parse(np.__version__) >= version.parse("2.0.0"):
+        logger.warning(f"Detected numpy version {np.__version__}. Numpy >= 2.0.0 is known to cause 'TypeError: Too few arguments for numpy.ndarray' in transformers/whisperx.")
+        logger.warning("Please downgrade numpy using: pip install 'numpy<2.0.0'")
+
+try:
+    check_numpy_version()
+except ImportError:
+    # packaging not installed, skip version check
+    pass
 
 def sanitize_filename(filename: str) -> str:
     # Define a set of valid characters

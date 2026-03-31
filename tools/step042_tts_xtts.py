@@ -39,6 +39,7 @@ def load_model(model_path="models/TTS/XTTS-v2", device='auto'):
 # Chinese (zh-cn), Japanese (ja), Hungarian (hu), Korean (ko) Hindi (hi).
 language_map = {
     '中文': 'zh-cn',
+    'Chinese': 'zh-cn',
     'English': 'en',
     'Spanish': 'es',
     'French': 'fr',
@@ -54,13 +55,14 @@ language_map = {
     'Hungarian': 'hu',
     'Hindi': 'hi',
     'Korean': 'ko',
+    'Japanese': 'ja',
 }
-def tts(text, output_path, speaker_wav, model_name="models/TTS/XTTS-v2", device='auto', target_language='中文'):
+def tts(text, output_path, speaker_wav, model_name="models/TTS/XTTS-v2", device='auto', target_language='Chinese'):
     global model
     language = language_map[target_language]
     assert language in ['ar', 'pt', 'zh-cn', 'cs', 'nl', 'en', 'fr', 'de', 'it', 'pl', 'ru', 'es', 'tr', 'ja', 'ko', 'hu', 'hi']
     if os.path.exists(output_path):
-        logger.info(f'TTS {text} 已存在')
+        logger.info(f'TTS {text} already exists')
         return
     
     if model is None:
@@ -74,7 +76,7 @@ def tts(text, output_path, speaker_wav, model_name="models/TTS/XTTS-v2", device=
             logger.info(f'TTS {text}')
             break
         except Exception as e:
-            logger.warning(f'TTS {text} 失败')
+            logger.warning(f'TTS {text} failed')
             logger.warning(e)
 
 
@@ -82,5 +84,5 @@ if __name__ == '__main__':
     speaker_wav = r'videos/村长台钓加拿大/20240805 英文无字幕 阿里这小子在水城威尼斯发来问候/audio_vocals.wav'
     os.makedirs('playground', exist_ok=True)
     while True:
-        text = input('请输入：')
+        text = input('Please enter: ')
         tts(text, f'playground/{text}.wav', speaker_wav)

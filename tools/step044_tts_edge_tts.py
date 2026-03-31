@@ -11,18 +11,24 @@ model = None
 
 
 
-#  <|zh|><|en|><|jp|><|yue|><|ko|> for Chinese/English/Japanese/Cantonese/Korean
+# Language mapping for EdgeTTS
 language_map = {
     '中文': 'zh-CN-XiaoxiaoNeural',
+    'Chinese': 'zh-CN-XiaoxiaoNeural',
     'English': 'en-US-MichelleNeural',
     'Japanese': 'ja-JP-NanamiNeural',
     '粤语': 'zh-HK-HiuMaanNeural',
-    'Korean': 'ko-KR-SunHiNeural'
+    'Cantonese': 'zh-HK-HiuMaanNeural',
+    'Korean': 'ko-KR-SunHiNeural',
+    'Spanish': 'es-ES-ElviraNeural',
+    'French': 'fr-FR-DeniseNeural',
+    'Romanian': 'ro-RO-AlinaNeural',
+    'ro': 'ro-RO-AlinaNeural'
 }
 
-def tts(text, output_path, target_language='中文', voice = 'zh-CN-XiaoxiaoNeural'):
+def tts(text, output_path, target_language='Chinese', voice = 'zh-CN-XiaoxiaoNeural'):
     if os.path.exists(output_path):
-        logger.info(f'TTS {text} 已存在')
+        logger.info(f'TTS {text} already exists')
         return
     for retry in range(3):
         try:
@@ -30,13 +36,13 @@ def tts(text, output_path, target_language='中文', voice = 'zh-CN-XiaoxiaoNeur
             logger.info(f'TTS {text}')
             break
         except Exception as e:
-            logger.warning(f'TTS {text} 失败')
+            logger.warning(f'TTS {text} failed')
             logger.warning(e)
 
 
 if __name__ == '__main__':
     speaker_wav = r'videos/村长台钓加拿大/20240805 英文无字幕 阿里这小子在水城威尼斯发来问候/audio_vocals.wav'
     while True:
-        text = input('请输入：')
-        tts(text, f'playground/{text}.wav', target_language='中文')
+        text = input('Please enter: ')
+        tts(text, f'playground/{text}.wav', target_language='Chinese')
         

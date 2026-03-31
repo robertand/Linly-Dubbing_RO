@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineE
 
 from ui_components import CustomSlider, RadioButtonGroup
 
-# 尝试导入实际的功能模块
+# Try to import actual function modules
 try:
     from tools.step010_demucs_vr import separate_all_audio_under_folder
 except ImportError:
@@ -16,53 +16,53 @@ class DemucsTab(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
 
-        # 视频文件夹
+        # Video Folder
         self.video_folder = QLineEdit("videos")
-        self.layout.addWidget(QLabel("视频文件夹"))
+        self.layout.addWidget(QLabel("Video Folder"))
         self.layout.addWidget(self.video_folder)
 
-        # 模型
+        # Model
         self.model = RadioButtonGroup(
             ['htdemucs', 'htdemucs_ft', 'htdemucs_6s', 'hdemucs_mmi', 'mdx', 'mdx_extra', 'mdx_q', 'mdx_extra_q',
              'SIG'],
-            "模型",
+            "Model",
             'htdemucs_ft'
         )
         self.layout.addWidget(self.model)
 
-        # 计算设备
-        self.device = RadioButtonGroup(['auto', 'cuda', 'cpu'], "计算设备", 'auto')
+        # Compute Device
+        self.device = RadioButtonGroup(['auto', 'cuda', 'cpu'], "Compute Device", 'auto')
         self.layout.addWidget(self.device)
 
-        # 显示进度条
-        self.show_progress = QCheckBox("显示进度条")
+        # Show Progress Bar
+        self.show_progress = QCheckBox("Show Progress Bar")
         self.show_progress.setChecked(True)
         self.layout.addWidget(self.show_progress)
 
-        # 移位次数
-        self.shifts = CustomSlider(0, 10, 1, "移位次数 Number of shifts", 5)
+        # Number of shifts
+        self.shifts = CustomSlider(0, 10, 1, "Number of Shifts", 5)
         self.layout.addWidget(self.shifts)
 
-        # 执行按钮
-        self.run_button = QPushButton("开始分离")
+        # Run Button
+        self.run_button = QPushButton("Start Separation")
         self.run_button.clicked.connect(self.run_separation)
         self.layout.addWidget(self.run_button)
 
-        # 状态显示
-        self.status_label = QLabel("准备就绪")
-        self.layout.addWidget(QLabel("分离结果状态:"))
+        # Status Display
+        self.status_label = QLabel("Ready")
+        self.layout.addWidget(QLabel("Separation Status:"))
         self.layout.addWidget(self.status_label)
 
-        # 音频播放控件
-        vocals_group = QGroupBox("人声音频")
+        # Audio Controls
+        vocals_group = QGroupBox("Vocals Audio")
         vocals_layout = QVBoxLayout()
-        self.vocals_play_button = QPushButton("播放人声")
+        self.vocals_play_button = QPushButton("Play Vocals")
         vocals_layout.addWidget(self.vocals_play_button)
         vocals_group.setLayout(vocals_layout)
 
-        accompaniment_group = QGroupBox("伴奏音频")
+        accompaniment_group = QGroupBox("Accompaniment Audio")
         accompaniment_layout = QVBoxLayout()
-        self.accompaniment_play_button = QPushButton("播放伴奏")
+        self.accompaniment_play_button = QPushButton("Play Accompaniment")
         accompaniment_layout.addWidget(self.accompaniment_play_button)
         accompaniment_group.setLayout(accompaniment_layout)
 
@@ -74,12 +74,12 @@ class DemucsTab(QWidget):
         self.setLayout(self.layout)
 
     def run_separation(self):
-        # 这里应该调用原始的separate_all_audio_under_folder函数
-        # 临时实现，实际应用中需要替换为真实的调用
-        self.status_label.setText("分离中...")
-        QMessageBox.information(self, "功能提示", "人声分离功能正在实现中...")
+        # This should call the original separate_all_audio_under_folder function
+        # Temporary implementation, needs to be replaced with real call in actual application
+        self.status_label.setText("Separating...")
+        QMessageBox.information(self, "Feature Hint", "Vocal separation feature is being implemented...")
 
-        # 实际应用中解除以下注释
+        # Uncomment the following in actual application
 
         try:
             status, vocals_path, accompaniment_path = separate_all_audio_under_folder(
@@ -95,4 +95,4 @@ class DemucsTab(QWidget):
             if accompaniment_path and os.path.exists(accompaniment_path):
                 self.accompaniment_play_button.setEnabled(True)
         except Exception as e:
-            self.status_label.setText(f"分离失败: {str(e)}")
+            self.status_label.setText(f"Separation Failed: {str(e)}")
